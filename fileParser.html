@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Excel to JSON 변환기 (성능 최적화형)</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        body {
+            font-family: 'Pretendard', sans-serif;
+            padding: 40px;
+            background-color: #f4f7f9;
+            color: #333;
+        }
+
+        .converter-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        }
+
+        h2 {
+            border-left: 5px solid #007bff;
+            padding-left: 15px;
+            margin-bottom: 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .upload-box {
+            border: 2px dashed #007bff;
+            padding: 30px;
+            text-align: center;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.3s;
+            background: #fff;
+            margin-bottom: 20px;
+        }
+
+        .upload-box:hover {
+            background-color: #f0f7ff;
+        }
+
+        #fileInput {
+            display: none;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            align-items: center;
+        }
+
+        button {
+            padding: 10px 18px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 0.85rem;
+        }
+
+        .btn-select {
+            background: #007bff;
+            color: white;
+        }
+
+        .btn-download {
+            background-color: #28a745;
+            color: white;
+            display: none;
+        }
+
+        .btn-action {
+            background-color: #6c757d;
+            color: white;
+            display: none;
+        }
+
+        #resultContainer {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            overflow: hidden;
+            background: white;
+        }
+
+        .data-item {
+            border-bottom: 1px solid #eee;
+        }
+
+        /* 타이틀 바 스타일 수정 */
+        .data-header {
+            padding: 12px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            background: #fff;
+        }
+
+        .data-header:hover {
+            background: #f9f9f9;
+        }
+
+        .title-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .badge-group {
+            background: #e7f1ff;
+            color: #007bff;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            font-family: 'Consolas', monospace;
+        }
+
+        .server-name {
+            font-weight: 800;
+            color: #333;
+            font-size: 0.95rem;
+        }
+
+        .collect-date {
+            font-size: 0.75rem;
+            color: #999;
+        }
+
+        .detail-view {
+            display: none;
+            background: #272822;
+            color: #f8f8f2;
+            padding: 15px;
+            font-family: 'Consolas', monospace;
+            font-size: 12px;
+            white-space: pre-wrap;
+            word-break: break-all;
+            border-top: 1px solid #444;
+        }
+
+        .data-item.active .detail-view {
+            display: block;
+        }
+
+        .data-item.active .toggle-icon::before {
+            content: '▼';
+            color: #007bff;
+        }
+
+        .toggle-icon::before {
+            content: '▶';
+            margin-right: 8px;
+            font-size: 10px;
+            color: #ccc;
+        }
+
+        .status {
+            font-size: 0.85rem;
+            color: #666;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="converter-container">
+        <h2>
+            <span>2025 연말정산 운영정보 Excel ➔ JSON 변환</span>
+            <span id="rowCount" style="font-size: 0.8rem; color: #888;"></span>
+        </h2>
+
+        <div class="upload-box" onclick="document.getElementById('fileInput').click()">
+            <strong>파일을 드래그하거나 클릭하여 업로드</strong>
+            <input type="file" id="fileInput" accept=".xlsx, .xls, .csv">
+        </div>
+
+        <div class="btn-group">
+            <button id="downloadBtn" class="btn-download">JSON 다운로드</button>
+            <button id="expandBtn" class="btn-action" onclick="toggleAll(true)">전체 펼치기</button>
+            <button id="collapseBtn" class="btn-action" onclick="toggleAll(false)">전체 닫기</button>
+        </div>
+
+        <div id="status" class="status">파일을 대기 중입니다.</div>
+        <div id="resultContainer"></div>
+    </div>
+
+    <script>
+        const fileInput = document.getElementById('fileInput');
+        const resultContainer = document.getElementById('resultContainer');
+        const actionBtns = document.querySelectorAll('.btn-action');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const status = document.getElementById('status');
+        const rowCount = document.getElementById('rowCount');
+        let finalData = null;
+
+        fileInput.addEventListener('change', handleFile);
+
+        async function handleFile(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            status.innerText = "데이터 파싱 중...";
+            resultContainer.innerHTML = "";
+
+            const reader = new FileReader();
+            reader.onload = async function (e) {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, { type: 'array', cellNF: false, cellText: false });
+                const result = {};
+
+                workbook.SheetNames.forEach(sheetName => {
+                    const rawRows = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], { defval: "" });
+                    result[sheetName] = rawRows.map(row => {
+                        const filteredRow = {
+                            "서버명": row['서버명'] || "",
+                            "그룹순번": row['그룹순번'] || "",
+                            "수집일": row['수집일'] || "",
+                            "수집정보": row['수집정보'] || ""
+                        };
+
+                        if (filteredRow['수집정보'] && typeof filteredRow['수집정보'] === 'string') {
+                            try {
+                                filteredRow['수집정보_parsed'] = JSON.parse(filteredRow['수집정보'].replace(/""/g, '"'));
+                            } catch (err) { filteredRow['수집정보_parsed'] = null; }
+                        }
+                        return filteredRow;
+                    });
+                });
+
+                finalData = result;
+                renderPreview(result);
+                status.innerText = `변환 완료: ${file.name}`;
+                downloadBtn.style.display = 'inline-block';
+                actionBtns.forEach(btn => btn.style.display = 'inline-block');
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        // 타이틀 바 구성 수정 (서버명 + 그룹순번)
+        function renderPreview(data) {
+            const fragment = document.createDocumentFragment();
+            let count = 0;
+
+            Object.keys(data).forEach(sheet => {
+                data[sheet].forEach((row, idx) => {
+                    count++;
+                    const item = document.createElement('div');
+                    item.className = 'data-item';
+
+                    const serverName = row['서버명'] || 'Unknown Server';
+                    const groupId = row['그룹순번'] || '-';
+                    const collectDate = row['수집일'] || '';
+
+                    item.innerHTML = `
+                    <div class="data-header" onclick="this.parentElement.classList.toggle('active')">
+                        <div class="title-wrapper">
+                            <span class="toggle-icon"></span>
+                            <span class="badge-group">ID: ${groupId}</span>
+                            <span class="server-name">${serverName}</span>
+                        </div>
+                        <span class="collect-date">${collectDate}</span>
+                    </div>
+                    <div class="detail-view">${JSON.stringify(row, null, 4)}</div>
+                `;
+                    fragment.appendChild(item);
+                });
+            });
+            resultContainer.appendChild(fragment);
+            rowCount.innerText = `총 ${count.toLocaleString()}건`;
+        }
+
+        function toggleAll(isOpen) {
+            const items = document.querySelectorAll('.data-item');
+            status.innerText = isOpen ? "전체 데이터를 펼치는 중입니다..." : "전체 데이터를 닫는 중입니다...";
+
+            requestAnimationFrame(() => {
+                items.forEach(item => {
+                    if (isOpen) item.classList.add('active');
+                    else item.classList.remove('active');
+                });
+                status.innerText = isOpen ? "전체 데이터가 펼쳐졌습니다." : "전체 데이터가 닫혔습니다.";
+            });
+        }
+
+        downloadBtn.addEventListener('click', () => {
+            if (!finalData) return;
+            const blob = new Blob([JSON.stringify(finalData, null, 2)], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `parsed_data_${Date.now()}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        });
+    </script>
+
+</body>
+
+</html>
