@@ -18,7 +18,7 @@
 
 ## 🌐 라이브 데모 (Live Demo)
 아래 링크를 클릭하여 대시보드를 직접 확인하실 수 있습니다.
-👉 **[대시보드 바로가기]([https://[사용자ID].github.io/[리포지토리명]](https://joeyw87.github.io/yrend-dashboard/))**
+**[대시보드 바로가기](https://joeyw87.github.io/yrend-dashboard/)**
 
 ## 🛠️ 사용 방법 (How to Use)
 
