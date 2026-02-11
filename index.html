@@ -3,8 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>연말정산 진행현황 통합 대시보드</title>
+    <title>연말정산 전사 수집현황 통합 리포트</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
@@ -67,6 +66,42 @@
 
         .btn-file:hover {
             background: #23272b;
+        }
+
+        .btn-download {
+            background: var(--success);
+            color: white;
+            padding: 10px 18px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: 0.2s;
+            box-shadow: 0 2px 6px rgba(40, 167, 69, 0.3);
+        }
+
+        .btn-download:hover {
+            background: #218838;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(40, 167, 69, 0.4);
+        }
+
+        .btn-parser {
+            background: var(--primary);
+            color: white;
+            padding: 10px 18px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: 0.2s;
+            box-shadow: 0 2px 6px rgba(0, 123, 255, 0.3);
+        }
+
+        .btn-parser:hover {
+            background: #0056b3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0, 123, 255, 0.4);
         }
 
         #jsonInput {
@@ -304,9 +339,10 @@
         }
 
         td {
-            padding: 12px 15px;
+            padding: 8px 12px;
             border-bottom: 1px solid var(--border);
             vertical-align: middle;
+            font-size: 0.85rem;
         }
 
         .group-cell {
@@ -319,20 +355,20 @@
             color: #1a1a1a;
             display: block;
             font-family: 'Consolas', monospace;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
         }
 
         .group-meta {
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             color: #999;
-            margin-top: 4px;
+            margin-top: 3px;
         }
 
         .stat-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
-            gap: 10px;
-            margin-bottom: 10px;
+            gap: 8px;
+            margin-bottom: 8px;
         }
 
         .stat-item {
@@ -340,13 +376,13 @@
         }
 
         .stat-item span {
-            font-size: 0.7rem;
+            font-size: 0.65rem;
             color: #888;
             display: block;
         }
 
         .stat-item b {
-            font-size: 1rem;
+            font-size: 0.9rem;
             display: block;
             margin-top: 2px;
         }
@@ -551,15 +587,17 @@
                     <span class="toggle-label">계속근무자만</span>
                 </div>
             </div>
-            <div class="upload-area">
-                <span id="fileName">JSON 파일을 업로드하세요</span>
-                <label for="jsonInput" class="btn-file">파일 선택</label>
-                <input type="file" id="jsonInput" accept=".json">
-                <div class="download-area">
-                    <a href="./data/parsed_data_202602100958_saas1to14.json" 
-                    target="_blank" 
-                    download 
-                    title="JSON 데이터 다운받기">📥</a>
+            <div style="display: flex; gap: 15px; align-items: center;">
+                <a href="./fileParser.html" class="btn-parser" target="_blank">
+                    🔄 JSON 변환
+                </a>
+                <a href="./data/saas_data.json" download="saas_data.json" class="btn-download">
+                    📥 샘플 JSON 다운로드
+                </a>
+                <div class="upload-area">
+                    <span id="fileName">JSON 파일을 업로드하세요</span>
+                    <label for="jsonInput" class="btn-file">파일 선택</label>
+                    <input type="file" id="jsonInput" accept=".json">
                 </div>
             </div>
         </div>
@@ -860,7 +898,7 @@
                         <span class="group-id">${group.그룹순번}</span>
                         <div class="group-meta">${group.서버명}</div>
                         <div class="group-meta">수집일: ${group.수집일}</div>
-                        <div class="group-meta" style="color:var(--dark); font-weight:bold; margin-top:5px;">
+                        <div class="group-meta" style="color:var(--dark); font-weight:bold; margin-top:4px;">
                             ${filterActive ? '계속근무자: ' + (type1Combined?.totalCnt || 0) : '전체: ' + group.totalSum}명
                         </div>
                     </td>
@@ -1110,10 +1148,10 @@
             const badgeLabel = label === '계속근무자' ? 'primary' : 'success';
             
             return `
-                <div style="padding: 10px;">
-                    <div style="margin-bottom: 15px;">
+                <div style="padding: 8px;">
+                    <div style="margin-bottom: 10px;">
                         <span class="badge badge-${badgeLabel}">${label}</span>
-                        <span style="font-size: 0.9rem; font-weight: bold;">총 ${info.totalCnt}명</span>
+                        <span style="font-size: 0.85rem; font-weight: bold;">총 ${info.totalCnt}명</span>
                     </div>
                     
                     <div class="stat-grid">
@@ -1135,38 +1173,38 @@
                         </div>
                     </div>
                     
-                    <div style="margin: 10px 0;">
-                        <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
-                            <span style="font-size: 0.75rem; color: #666;">관리자 마감률</span>
-                            <span style="font-size: 0.85rem; font-weight: bold; color: ${color}">${rate}%</span>
+                    <div style="margin: 8px 0;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                            <span style="font-size: 0.7rem; color: #666;">관리자 마감률</span>
+                            <span style="font-size: 0.8rem; font-weight: bold; color: ${color}">${rate}%</span>
                         </div>
                         <div class="progress-bar-container">
                             <div class="progress-bar" style="width: ${rate}%; background-color: ${color}"></div>
                         </div>
                     </div>
                     
-                    <div style="margin-top: 15px; padding-top: 10px; border-top: 1px solid #eee;">
+                    <div style="margin-top: 10px; padding-top: 8px; border-top: 1px solid #eee;">
                         <div class="stat-grid">
                             <div class="stat-item">
                                 <span>모바일</span>
-                                <b style="color: var(--purple); font-size: 0.85rem;">${info.scrapReqTypeMCnt || 0}</b>
+                                <b style="color: var(--purple); font-size: 0.8rem;">${info.scrapReqTypeMCnt || 0}</b>
                             </div>
                             <div class="stat-item">
                                 <span>웹</span>
-                                <b style="color: var(--info); font-size: 0.85rem;">${info.scrapReqTypeWCnt || 0}</b>
+                                <b style="color: var(--info); font-size: 0.8rem;">${info.scrapReqTypeWCnt || 0}</b>
                             </div>
                             <div class="stat-item">
                                 <span>PDF관</span>
-                                <b style="color: #6f42c1; font-size: 0.85rem;">${info.pdfupload1Cnt || 0}</b>
+                                <b style="color: #6f42c1; font-size: 0.8rem;">${info.pdfupload1Cnt || 0}</b>
                             </div>
                             <div class="stat-item">
                                 <span>PDF사</span>
-                                <b style="color: var(--teal); font-size: 0.85rem;">${info.pdfupload2Cnt || 0}</b>
+                                <b style="color: var(--teal); font-size: 0.8rem;">${info.pdfupload2Cnt || 0}</b>
                             </div>
                         </div>
-                        <div style="text-align: center; margin-top: 8px;">
-                            <span style="font-size: 0.7rem; color: #999;">편리한 연말정산: </span>
-                            <b style="font-size: 0.8rem; color: var(--success)">${info.easyPdfCnt || 0}명</b>
+                        <div style="text-align: center; margin-top: 6px;">
+                            <span style="font-size: 0.65rem; color: #999;">편리한 연말정산: </span>
+                            <b style="font-size: 0.75rem; color: var(--success)">${info.easyPdfCnt || 0}명</b>
                         </div>
                     </div>
                 </div>
