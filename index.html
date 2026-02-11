@@ -858,9 +858,9 @@
                     if (i.stlTp === "2") stats.type2Cnt += i.totalCnt;
                 });
                 
-                // 스크래핑, PDF, 편리한 연말정산은 항상 전체 YREND 데이터 집계
+                // 스크래핑, PDF, 편리한 연말정산도 필터 적용 (targetInfo 사용)
                 let hasEasyPdf = false;
-                yrendData.forEach(i => {
+                targetInfo.forEach(i => {
                     stats.scrapMobileCnt += i.scrapReqTypeMCnt || 0;
                     stats.scrapWebCnt += i.scrapReqTypeWCnt || 0;
                     stats.pdfAdminCnt += i.pdfupload1Cnt || 0;
@@ -1251,10 +1251,15 @@
             
             // SaaS별로 그룹화하여 편리한 연말정산 사용 회사 추출
             const easyPdfCompanies = {};
+            let totalEasyPdfUsers = 0; // 전체 사용자 수
             
             rawData.forEach(group => {
                 const yrendData = group.수집정보_parsed.filter(i => i.txformCd === 'YREND');
-                const hasEasyPdf = yrendData.some(i => (i.easyPdfCnt || 0) > 0);
+                
+                // 필터 적용 여부에 따라 데이터 필터링
+                const targetData = filterActive ? yrendData.filter(i => i.stlTp === "1") : yrendData;
+                
+                const hasEasyPdf = targetData.some(i => (i.easyPdfCnt || 0) > 0);
                 
                 if (hasEasyPdf) {
                     const saasName = group.서버명;
@@ -1262,8 +1267,10 @@
                         easyPdfCompanies[saasName] = [];
                     }
                     
-                    const totalEasyPdf = yrendData.reduce((sum, i) => sum + (i.easyPdfCnt || 0), 0);
-                    const totalCnt = yrendData.reduce((sum, i) => sum + i.totalCnt, 0);
+                    const totalEasyPdf = targetData.reduce((sum, i) => sum + (i.easyPdfCnt || 0), 0);
+                    const totalCnt = targetData.reduce((sum, i) => sum + i.totalCnt, 0);
+                    
+                    totalEasyPdfUsers += totalEasyPdf; // 전체 사용자 수 누적
                     
                     easyPdfCompanies[saasName].push({
                         id: group.그룹순번,
@@ -1279,14 +1286,34 @@
             // 모달 내용 생성
             let html = '';
             const sortedSaas = Object.keys(easyPdfCompanies).sort();
+            const totalCompanies = sortedSaas.reduce((sum, saas) => sum + easyPdfCompanies[saas].length, 0);
+            
+            // 상단 요약 정보 추가
+            html += `
+                <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
+                    <div style="display: flex; justify-content: space-around; text-align: center;">
+                        <div>
+                            <div style="font-size: 0.9rem; opacity: 0.9; margin-bottom: 5px;">사용 회사 수</div>
+                            <div style="font-size: 2rem; font-weight: bold;">${totalCompanies}</div>
+                        </div>
+                        <div style="width: 1px; background: rgba(255,255,255,0.3);"></div>
+                        <div>
+                            <div style="font-size: 0.9rem; opacity: 0.9; margin-bottom: 5px;">총 사용자 수</div>
+                            <div style="font-size: 2rem; font-weight: bold;">${totalEasyPdfUsers.toLocaleString()}</div>
+                        </div>
+                    </div>
+                </div>
+            `;
             
             sortedSaas.forEach(saasName => {
                 const companies = easyPdfCompanies[saasName];
+                const saasTotal = companies.reduce((sum, c) => sum + c.easyPdfCnt, 0);
+                
                 html += `
                     <div class="saas-section">
                         <div class="saas-header">
                             <span>${saasName}</span>
-                            <span class="saas-count">${companies.length}개 회사</span>
+                            <span class="saas-count">${companies.length}개 회사 · ${saasTotal.toLocaleString()}명 사용</span>
                         </div>
                         <div class="company-list">
                 `;
@@ -1298,7 +1325,7 @@
                             <div class="company-id">그룹순번: ${company.id}</div>
                             <div class="company-stats">
                                 <span>📅 ${company.date}</span>
-                                <span>👥 사용자: ${company.easyPdfCnt}명</span>
+                                <span>👥 사용자: <strong>${company.easyPdfCnt}명</strong></span>
                                 <span>📊 전체: ${company.totalCnt}명</span>
                                 <span>✅ 사용률: ${company.rate}%</span>
                             </div>
@@ -1312,7 +1339,7 @@
                 `;
             });
             
-            if (html === '') {
+            if (html === '' || totalCompanies === 0) {
                 html = '<div style="text-align: center; padding: 50px; color: #999;">편리한 연말정산을 사용하는 회사가 없습니다.</div>';
             }
             
