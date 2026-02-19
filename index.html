@@ -166,6 +166,11 @@
             gap: 20px;
             margin-bottom: 20px;
         }
+        
+        /* 스크래핑 & PDF 섹션은 4개 컬럼 */
+        #chartSection2 .chart-row {
+            grid-template-columns: repeat(4, 1fr);
+        }
 
         .chart-card {
             background: white;
@@ -684,6 +689,13 @@
                     </div>
                     <div id="easyPdfCompanyInfo"></div>
                 </div>
+                <div class="chart-card">
+                    <h4>원천징수영수증 메일 발송 현황</h4>
+                    <div class="chart-container">
+                        <canvas id="sendMailChart"></canvas>
+                    </div>
+                    <div id="sendMailCompanyInfo"></div>
+                </div>
             </div>
         </div>
 
@@ -740,13 +752,26 @@
     </div>
 
     <!-- 편리한 연말정산 사용 회사 모달 -->
-    <div class="modal-overlay" id="easyPdfModal" onclick="closeModal(event)">
+    <div class="modal-overlay" id="easyPdfModal" onclick="closeModal(event, 'easyPdfModal')">
         <div class="modal-content" onclick="event.stopPropagation()">
             <div class="modal-header">
                 <h3>📋 편리한 연말정산 사용 회사 목록</h3>
-                <button class="modal-close" onclick="closeModal()">&times;</button>
+                <button class="modal-close" onclick="closeModal(null, 'easyPdfModal')">&times;</button>
             </div>
-            <div class="modal-body" id="modalBody">
+            <div class="modal-body" id="easyPdfModalBody">
+                <!-- 동적으로 생성 -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 메일 발송 사용 회사 모달 -->
+    <div class="modal-overlay" id="sendMailModal" onclick="closeModal(event, 'sendMailModal')">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h3>📧 원천징수영수증 메일 발송 회사 목록</h3>
+                <button class="modal-close" onclick="closeModal(null, 'sendMailModal')">&times;</button>
+            </div>
+            <div class="modal-body" id="sendMailModalBody">
                 <!-- 동적으로 생성 -->
             </div>
         </div>
@@ -811,7 +836,13 @@
                 pdfAdminCnt: 0,
                 pdfUserCnt: 0,
                 easyPdfCnt: 0,
-                easyPdfCompanyCnt: 0  // 편리한 연말정산 사용 회사 수
+                easyPdfCompanyCnt: 0,  // 편리한 연말정산 사용 회사 수
+                sendMailCnt: 0,        // 메일 발송 대상자
+                sendSmsCnt: 0,         // SMS 발송 대상자
+                sendWaitUserCnt: 0,    // 작업 대기 대상자
+                sendUserCnt: 0,        // 전송 대상자
+                sendExmailUserCnt: 0,  // 외부메일 사용자
+                sendMailCompanyCnt: 0  // 메일 발송 사용 회사 수
             };
             
             saasGroups = {};
@@ -865,6 +896,7 @@
                 
                 // 스크래핑, PDF, 편리한 연말정산도 필터 적용 (targetInfo 사용)
                 let hasEasyPdf = false;
+                let hasSendMail = false;
                 targetInfo.forEach(i => {
                     stats.scrapMobileCnt += i.scrapReqTypeMCnt || 0;
                     stats.scrapWebCnt += i.scrapReqTypeWCnt || 0;
@@ -872,14 +904,30 @@
                     stats.pdfUserCnt += i.pdfupload2Cnt || 0;
                     stats.easyPdfCnt += i.easyPdfCnt || 0;
                     
+                    // 메일 발송 현황 집계
+                    stats.sendMailCnt += i.sendMailCnt || 0;
+                    stats.sendSmsCnt += i.sendSmsCnt || 0;
+                    stats.sendWaitUserCnt += i.sendWaitUserCnt || 0;
+                    stats.sendUserCnt += i.sendUserCnt || 0;
+                    stats.sendExmailUserCnt += i.sendExmailUserCnt || 0;
+                    
                     // 편리한 연말정산 사용 회사 카운트 (1명이라도 사용하면 카운트)
                     if ((i.easyPdfCnt || 0) > 0) {
                         hasEasyPdf = true;
+                    }
+                    
+                    // 메일 발송 사용 회사 카운트
+                    if ((i.sendMailCnt || 0) > 0) {
+                        hasSendMail = true;
                     }
                 });
                 
                 if (hasEasyPdf) {
                     stats.easyPdfCompanyCnt++;
+                }
+                
+                if (hasSendMail) {
+                    stats.sendMailCompanyCnt++;
                 }
 
                 // SaaS별 그룹화
@@ -1058,7 +1106,46 @@
                 </div>
             `;
 
-            // 7. SaaS별 진행률
+            // 7. 원천징수영수증 메일 발송 현황
+            const sendMailRate = s.sendUserCnt > 0 ? Math.round((s.sendMailCnt / s.sendUserCnt) * 100) : 0;
+            const sendMailCompanyRate = s.groups > 0 ? Math.round((s.sendMailCompanyCnt / s.groups) * 100) : 0;
+            const notSendMail = s.sendUserCnt - s.sendMailCnt;
+            
+            updateChart('sendMailChart', 'doughnut', {
+                labels: ['발송', '미발송'],
+                datasets: [{
+                    data: [s.sendMailCnt, notSendMail],
+                    backgroundColor: ['#007bff', '#e9ecef']
+                }]
+            }, {
+                plugins: {
+                    legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 }, padding: 10 } },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const label = context.label || '';
+                                const value = context.parsed || 0;
+                                const percent = s.sendUserCnt > 0 ? Math.round((value / s.sendUserCnt) * 100) : 0;
+                                return `${label}: ${value.toLocaleString()}명 (${percent}%)`;
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // 메일 발송 사용 회사 수 텍스트 업데이트
+            document.getElementById('sendMailCompanyInfo').innerHTML = `
+                <div style="text-align: center; padding: 15px; background: #f8f9fa; border-radius: 8px; margin-top: 10px; cursor: pointer; transition: 0.2s;" 
+                     onmouseover="this.style.background='#e9ecef'" 
+                     onmouseout="this.style.background='#f8f9fa'"
+                     onclick="showSendMailCompanyModal()">
+                    <div style="font-size: 0.85rem; color: #666; margin-bottom: 5px;">발송 사용 회사 수 <span style="font-size: 0.7rem; color: #999;">▼ 클릭하여 상세보기</span></div>
+                    <div style="font-size: 1.8rem; font-weight: bold; color: #007bff;">${s.sendMailCompanyCnt}</div>
+                    <div style="font-size: 0.75rem; color: #999; margin-top: 3px;">전체 ${s.groups}개 중 ${sendMailCompanyRate}%</div>
+                </div>
+            `;
+
+            // 8. SaaS별 진행률
             updateSaasChart();
         }
 
@@ -1251,7 +1338,7 @@
         }
 
         function showEasyPdfCompanyModal() {
-            const modalBody = document.getElementById('modalBody');
+            const modalBody = document.getElementById('easyPdfModalBody');
             const modal = document.getElementById('easyPdfModal');
             
             // SaaS별로 그룹화하여 편리한 연말정산 사용 회사 추출
@@ -1352,8 +1439,139 @@
             modal.classList.add('active');
         }
 
-        function closeModal(event) {
-            const modal = document.getElementById('easyPdfModal');
+        function showSendMailCompanyModal() {
+            const modalBody = document.getElementById('sendMailModalBody');
+            const modal = document.getElementById('sendMailModal');
+            
+            // SaaS별로 그룹화하여 메일 발송 사용 회사 추출
+            const sendMailCompanies = {};
+            let totalMailUsers = 0;
+            let totalSmsUsers = 0;
+            let totalExmailUsers = 0;
+            let totalTargetUsers = 0; // 메일 대상자 (sendUserCnt)
+            
+            rawData.forEach(group => {
+                const yrendData = group.수집정보_parsed.filter(i => i.txformCd === 'YREND');
+                
+                // 필터 적용 여부에 따라 데이터 필터링
+                const targetData = filterActive ? yrendData.filter(i => i.stlTp === "1") : yrendData;
+                
+                const hasSendMail = targetData.some(i => (i.sendMailCnt || 0) > 0);
+                
+                if (hasSendMail) {
+                    const saasName = group.서버명;
+                    if (!sendMailCompanies[saasName]) {
+                        sendMailCompanies[saasName] = [];
+                    }
+                    
+                    const mailCnt = targetData.reduce((sum, i) => sum + (i.sendMailCnt || 0), 0);
+                    const smsCnt = targetData.reduce((sum, i) => sum + (i.sendSmsCnt || 0), 0);
+                    const waitCnt = targetData.reduce((sum, i) => sum + (i.sendWaitUserCnt || 0), 0);
+                    const userCnt = targetData.reduce((sum, i) => sum + (i.sendUserCnt || 0), 0);
+                    const exmailCnt = targetData.reduce((sum, i) => sum + (i.sendExmailUserCnt || 0), 0);
+                    
+                    totalMailUsers += mailCnt;
+                    totalSmsUsers += smsCnt;
+                    totalExmailUsers += exmailCnt;
+                    totalTargetUsers += userCnt; // 메일 대상자 누적
+                    
+                    sendMailCompanies[saasName].push({
+                        id: group.그룹순번,
+                        name: group.서버명,
+                        date: group.수집일,
+                        mailCnt: mailCnt,
+                        smsCnt: smsCnt,
+                        waitCnt: waitCnt,
+                        userCnt: userCnt,
+                        exmailCnt: exmailCnt,
+                        rate: userCnt > 0 ? Math.round((mailCnt / userCnt) * 100) : 0
+                    });
+                }
+            });
+            
+            // 모달 내용 생성
+            let html = '';
+            const sortedSaas = Object.keys(sendMailCompanies).sort();
+            const totalCompanies = sortedSaas.reduce((sum, saas) => sum + sendMailCompanies[saas].length, 0);
+            
+            // 상단 요약 정보 추가
+            html += `
+                <div style="background: linear-gradient(135deg, #007bff 0%, #0056b3 100%); color: white; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
+                    <div style="display: flex; justify-content: space-around; text-align: center;">
+                        <div>
+                            <div style="font-size: 0.9rem; opacity: 0.9; margin-bottom: 5px;">사용 회사 수</div>
+                            <div style="font-size: 2rem; font-weight: bold;">${totalCompanies}</div>
+                        </div>
+                        <div style="width: 1px; background: rgba(255,255,255,0.3);"></div>
+                        <div>
+                            <div style="font-size: 0.9rem; opacity: 0.9; margin-bottom: 5px;">메일 대상자</div>
+                            <div style="font-size: 2rem; font-weight: bold;">${totalMailUsers.toLocaleString()}</div>
+                        </div>
+                        <div style="width: 1px; background: rgba(255,255,255,0.3);"></div>
+                        <div>
+                            <div style="font-size: 0.9rem; opacity: 0.9; margin-bottom: 5px;">SMS 대상자</div>
+                            <div style="font-size: 2rem; font-weight: bold;">${totalSmsUsers.toLocaleString()}</div>
+                        </div>
+                        <div style="width: 1px; background: rgba(255,255,255,0.3);"></div>
+                        <div>
+                            <div style="font-size: 0.9rem; opacity: 0.9; margin-bottom: 5px;">발송 완료</div>
+                            <div style="font-size: 2rem; font-weight: bold;">${totalTargetUsers.toLocaleString()}</div>
+                        </div>
+                        <div style="width: 1px; background: rgba(255,255,255,0.3);"></div>
+                        <div>
+                            <div style="font-size: 0.9rem; opacity: 0.9; margin-bottom: 5px;">외부메일</div>
+                            <div style="font-size: 2rem; font-weight: bold;">${totalExmailUsers.toLocaleString()}</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            sortedSaas.forEach(saasName => {
+                const companies = sendMailCompanies[saasName];
+                const saasMailTotal = companies.reduce((sum, c) => sum + c.mailCnt, 0);
+                
+                html += `
+                    <div class="saas-section">
+                        <div class="saas-header">
+                            <span>${saasName}</span>
+                            <span class="saas-count">${companies.length}개 회사 · ${saasMailTotal.toLocaleString()}명 발송</span>
+                        </div>
+                        <div class="company-list">
+                `;
+                
+                companies.forEach(company => {
+                    html += `
+                        <div class="company-item">
+                            <div class="company-name">${company.name}</div>
+                            <div class="company-id">그룹순번: ${company.id}</div>
+                            <div class="company-stats">
+                                <span>📅 ${company.date}</span>
+                                <span>📧 메일: <strong>${company.mailCnt}명</strong></span>
+                                <span>💬 SMS: ${company.smsCnt}명</span>
+                                <span>✅ 발송완료: ${company.userCnt}명</span>
+                                <span>🌐 외부메일: ${company.exmailCnt}명</span>
+                                <span>⏳ 대기: ${company.waitCnt}명</span>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                html += `
+                        </div>
+                    </div>
+                `;
+            });
+            
+            if (html === '' || totalCompanies === 0) {
+                html = '<div style="text-align: center; padding: 50px; color: #999;">메일 발송을 사용하는 회사가 없습니다.</div>';
+            }
+            
+            modalBody.innerHTML = html;
+            modal.classList.add('active');
+        }
+
+        function closeModal(event, modalId) {
+            const modal = document.getElementById(modalId);
             modal.classList.remove('active');
         }
     </script>
