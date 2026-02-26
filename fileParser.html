@@ -203,6 +203,43 @@
         const rowCount = document.getElementById('rowCount');
         let finalData = null;
 
+        /**
+         * 엑셀에서 추출된 JSON 문자열을 안전하게 파싱합니다.
+         * 케이스 1: 이미 유효한 JSON              → 그대로 파싱
+         * 케이스 2: 백슬래시 이스케이프 \"        → 그대로 파싱 (JS 문자열 이미 처리)
+         * 케이스 3: CSV 스타일 "" 이스케이프      → "" → " 치환 후 파싱
+         * 케이스 4: 앞뒤 따옴표로 감싸진 경우     → 제거 후 파싱
+         */
+        function parseJsonSafe(str) {
+            if (!str || typeof str !== 'string') return null;
+
+            const candidates = [];
+
+            // 원본 그대로 시도
+            candidates.push(str.trim());
+
+            // "" → " 치환 (CSV 스타일)
+            candidates.push(str.trim().replace(/""/g, '"'));
+
+            // 앞뒤를 감싸는 따옴표 제거 후 시도
+            const unwrapped = str.trim().replace(/^"+|"+$/g, '');
+            candidates.push(unwrapped);
+            candidates.push(unwrapped.replace(/""/g, '"'));
+
+            for (const candidate of candidates) {
+                try {
+                    const parsed = JSON.parse(candidate);
+                    return parsed;
+                } catch (e) {
+                    // 다음 후보 시도
+                }
+            }
+
+            // 모두 실패 시 null 반환
+            console.warn('[수집정보 파싱 실패] 원본값:', str);
+            return null;
+        }
+
         fileInput.addEventListener('change', handleFile);
 
         async function handleFile(e) {
@@ -228,9 +265,7 @@
                         };
 
                         if (filteredRow['수집정보'] && typeof filteredRow['수집정보'] === 'string') {
-                            try {
-                                filteredRow['수집정보_parsed'] = JSON.parse(filteredRow['수집정보'].replace(/""/g, '"'));
-                            } catch (err) { filteredRow['수집정보_parsed'] = null; }
+                            filteredRow['수집정보_parsed'] = parseJsonSafe(filteredRow['수집정보']);
                         }
                         return filteredRow;
                     });
