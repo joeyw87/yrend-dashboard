@@ -166,7 +166,7 @@
             gap: 20px;
             margin-bottom: 20px;
         }
-        
+
         /* 스크래핑 & PDF 섹션은 4개 컬럼 */
         #chartSection2 .chart-row {
             grid-template-columns: repeat(4, 1fr);
@@ -181,11 +181,11 @@
             display: flex;
             flex-direction: column;
         }
-        
+
         .chart-card.tall {
             height: 450px;
         }
-        
+
         /* 스크래핑 & PDF 섹션의 카드들은 동일한 높이로 */
         #chartSection2 .chart-card {
             height: 420px;
@@ -232,7 +232,7 @@
             font-weight: 600;
             transition: 0.2s;
         }
-        
+
         .btn-filter {
             padding: 10px 18px;
             font-size: 0.9rem;
@@ -293,11 +293,11 @@
             border-radius: 50%;
         }
 
-        .toggle-switch input:checked + .toggle-slider {
+        .toggle-switch input:checked+.toggle-slider {
             background-color: var(--primary);
         }
 
-        .toggle-switch input:checked + .toggle-slider:before {
+        .toggle-switch input:checked+.toggle-slider:before {
             transform: translateX(20px);
         }
 
@@ -305,7 +305,7 @@
             background-color: #999;
         }
 
-        .toggle-switch input:checked + .toggle-slider:hover {
+        .toggle-switch input:checked+.toggle-slider:hover {
             background-color: #0056b3;
         }
 
@@ -704,7 +704,8 @@
             <h2 class="section-title">🏢 그룹별 진행률 TOP 10</h2>
             <div class="chart-row">
                 <div class="chart-card" style="grid-column: 1 / -1; height: 450px;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
                         <h4 style="margin: 0; border: none; padding: 0;">SaaS별 진행률 (관리자 마감 기준)</h4>
                         <select id="saasSelector" onchange="updateSaasChart()"
                             style="padding: 6px 12px; border-radius: 6px; border: 1px solid #ddd; font-size: 0.85rem;">
@@ -720,30 +721,40 @@
         <!-- 컨트롤 -->
         <div class="controls hidden" id="controls">
             <div class="sort-area">
-                <button class="btn-sort" onclick="sortData('desc')">대상자 많은 순 ↓</button>
-                <button class="btn-sort" onclick="sortData('asc')">대상자 적은 순 ↑</button>
+                <button id="detailTableToggle" class="btn-filter" onclick="toggleDetailTable()">상세 테이블 표시</button>
             </div>
         </div>
     </div>
 
-    <!-- 테이블 -->
-    <div class="table-container">
-        <table id="mainTable">
-            <thead>
-                <tr>
-                    <th class="group-cell">그룹 정보</th>
-                    <th>계속근무자 (StlTp: 1)</th>
-                    <th>중도퇴직자 (StlTp: 2)</th>
-                </tr>
-            </thead>
-            <tbody id="tableBody">
-                <tr>
-                    <td colspan="3" style="text-align:center; padding: 100px; color: #ccc;">
-                        데이터를 업로드해주세요.
-                    </td>
-                </tr>
-            </tbody>
-        </table>
+    <!-- 상세 고객사 그룹 테이블 섹션 -->
+    <div class="chart-section hidden" id="detailTableSection">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+            <h2 class="section-title" style="margin: 0; border: none; padding: 0;">📋 상세 고객사 그룹 테이블</h2>
+            <select id="sortSelector" onchange="handleSortChange()"
+                style="padding: 8px 12px; border-radius: 6px; border: 1px solid #ddd; font-size: 0.85rem; font-weight: 600; cursor: pointer; background: white; transition: 0.2s;">
+                <option value="">정렬: 기본</option>
+                <option value="desc">정렬: 대상자 많은 순</option>
+                <option value="asc">정렬: 대상자 적은 순</option>
+            </select>
+        </div>
+        <div class="table-container">
+            <table id="mainTable">
+                <thead>
+                    <tr>
+                        <th class="group-cell">그룹 정보</th>
+                        <th>계속근무자 (StlTp: 1)</th>
+                        <th>중도퇴직자 (StlTp: 2)</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    <tr>
+                        <td colspan="3" style="text-align:center; padding: 100px; color: #ccc;">
+                            데이터를 업로드해주세요.
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
     </div>
 
     <!-- 푸터 -->
@@ -780,6 +791,7 @@
     <script>
         let rawData = [];
         let filterActive = false;
+        let showDetailTable = false; // 최초 진입 시 상세 테이블 숨김 (빠른 로딩)
         let charts = {};
         let saasGroups = {};
 
@@ -794,13 +806,13 @@
                 try {
                     const data = JSON.parse(event.target.result);
                     rawData = Array.isArray(data) ? data : Object.values(data).flat();
-                    
+
                     // YREND 데이터만 추출하여 totalSum 계산
                     rawData.forEach(group => {
                         const yrendData = group.수집정보_parsed.filter(i => i.txformCd === 'YREND');
                         group.totalSum = yrendData.reduce((acc, curr) => acc + curr.totalCnt, 0);
                     });
-                    
+
                     // UI 표시
                     document.getElementById('summarySection').classList.remove('hidden');
                     document.getElementById('chartSection1').classList.remove('hidden');
@@ -808,7 +820,7 @@
                     document.getElementById('chartSection3').classList.remove('hidden');
                     document.getElementById('controls').classList.remove('hidden');
                     document.getElementById('filterToggleContainer').style.display = 'flex';
-                    
+
                     renderDashboard(rawData);
                 } catch (e) {
                     alert("JSON 파싱 오류가 발생했습니다: " + e.message);
@@ -820,7 +832,7 @@
         function renderDashboard(data) {
             const body = document.getElementById('tableBody');
             body.innerHTML = '';
-            
+
             // 집계 변수 초기화
             let stats = {
                 groups: 0,
@@ -844,13 +856,13 @@
                 sendExmailUserCnt: 0,  // 외부메일 사용자
                 sendMailCompanyCnt: 0  // 메일 발송 사용 회사 수
             };
-            
+
             saasGroups = {};
 
             data.forEach(group => {
                 // YREND 데이터만 필터링
                 const yrendData = group.수집정보_parsed.filter(i => i.txformCd === 'YREND');
-                
+
                 // 필터 적용
                 const targetInfo = filterActive ? yrendData.filter(i => i.stlTp === "1") : yrendData;
                 if (targetInfo.length === 0 && filterActive) return;
@@ -889,11 +901,11 @@
                     stats.userConfirmCnt += i.userConfirmCnt;
                     stats.adminConfirmCnt += i.adminConfirmCnt;
                     stats.cancelConfirmCnt += i.cancelConfirmCnt;
-                    
+
                     if (i.stlTp === "1") stats.type1Cnt += i.totalCnt;
                     if (i.stlTp === "2") stats.type2Cnt += i.totalCnt;
                 });
-                
+
                 // 스크래핑, PDF, 편리한 연말정산도 필터 적용 (targetInfo 사용)
                 let hasEasyPdf = false;
                 let hasSendMail = false;
@@ -903,29 +915,29 @@
                     stats.pdfAdminCnt += i.pdfupload1Cnt || 0;
                     stats.pdfUserCnt += i.pdfupload2Cnt || 0;
                     stats.easyPdfCnt += i.easyPdfCnt || 0;
-                    
+
                     // 메일 발송 현황 집계
                     stats.sendMailCnt += i.sendMailCnt || 0;
                     stats.sendSmsCnt += i.sendSmsCnt || 0;
                     stats.sendWaitUserCnt += i.sendWaitUserCnt || 0;
                     stats.sendUserCnt += i.sendUserCnt || 0;
                     stats.sendExmailUserCnt += i.sendExmailUserCnt || 0;
-                    
+
                     // 편리한 연말정산 사용 회사 카운트 (1명이라도 사용하면 카운트)
                     if ((i.easyPdfCnt || 0) > 0) {
                         hasEasyPdf = true;
                     }
-                    
+
                     // 메일 발송 사용 회사 카운트
                     if ((i.sendMailCnt || 0) > 0) {
                         hasSendMail = true;
                     }
                 });
-                
+
                 if (hasEasyPdf) {
                     stats.easyPdfCompanyCnt++;
                 }
-                
+
                 if (hasSendMail) {
                     stats.sendMailCompanyCnt++;
                 }
@@ -933,10 +945,10 @@
                 // SaaS별 그룹화
                 const saasName = group.서버명;
                 if (!saasGroups[saasName]) saasGroups[saasName] = [];
-                
+
                 const confirm = targetInfo.reduce((a, b) => a + b.adminConfirmCnt, 0);
                 const total = targetInfo.reduce((a, b) => a + b.totalCnt, 0);
-                
+
                 saasGroups[saasName].push({
                     id: group.그룹순번,
                     name: group.서버명,
@@ -944,26 +956,29 @@
                     totalCnt: total
                 });
 
-                // 테이블 행 생성
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td class="group-cell">
-                        <span class="group-id">${group.그룹순번}</span>
-                        <div class="group-meta">${group.서버명}</div>
-                        <div class="group-meta">수집일: ${group.수집일}</div>
-                        <div class="group-meta" style="color:var(--dark); font-weight:bold; margin-top:4px;">
-                            ${filterActive ? '계속근무자: ' + (type1Combined?.totalCnt || 0) : '전체: ' + group.totalSum}명
-                        </div>
-                    </td>
-                    <td>${getStatHtml(type1Combined, 'var(--primary)', '계속근무자')}</td>
-                    <td>${filterActive ? '<div style="color:#ddd; text-align:center;">필터 적용됨</div>' : getStatHtml(type2Combined, 'var(--success)', '중도퇴직자')}</td>
-                `;
-                body.appendChild(row);
+                // 상세 테이블 표시가 활성화된 경우에만 행 생성
+                if (showDetailTable) {
+                    // 테이블 행 생성
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td class="group-cell">
+                            <span class="group-id">${group.그룹순번}</span>
+                            <div class="group-meta">${group.서버명}</div>
+                            <div class="group-meta">수집일: ${group.수집일}</div>
+                            <div class="group-meta" style="color:var(--dark); font-weight:bold; margin-top:4px;">
+                                ${filterActive ? '계속근무자: ' + (type1Combined?.totalCnt || 0) : '전체: ' + group.totalSum}명
+                            </div>
+                        </td>
+                        <td>${getStatHtml(type1Combined, 'var(--primary)', '계속근무자')}</td>
+                        <td>${filterActive ? '<div style="color:#ddd; text-align:center;">필터 적용됨</div>' : getStatHtml(type2Combined, 'var(--success)', '중도퇴직자')}</td>
+                    `;
+                    body.appendChild(row);
+                }
             });
 
             // SaaS 선택 드롭다운 업데이트
             updateSaasSelector();
-            
+
             // 대시보드 업데이트
             updateSummary(stats);
             initCharts(stats);
@@ -976,7 +991,7 @@
             document.getElementById('totalAdminConfirm').innerText = s.adminConfirmCnt.toLocaleString();
             document.getElementById('totalUserConfirm').innerText = s.userConfirmCnt.toLocaleString();
             document.getElementById('totalCancel').innerText = s.cancelConfirmCnt.toLocaleString();
-            
+
             document.getElementById('waitRate').innerText = `${Math.round((s.waitCnt / s.totalEmp) * 100) || 0}%`;
             document.getElementById('adminRate').innerText = `${Math.round((s.adminConfirmCnt / s.totalEmp) * 100) || 0}%`;
             document.getElementById('userRate').innerText = `${Math.round((s.userConfirmCnt / s.totalEmp) * 100) || 0}%`;
@@ -1057,7 +1072,7 @@
                     legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 }, padding: 10 } },
                     tooltip: {
                         callbacks: {
-                            label: function(context) {
+                            label: function (context) {
                                 const label = context.label || '';
                                 const value = context.parsed || 0;
                                 return `${label}: ${value.toLocaleString()}건`;
@@ -1071,7 +1086,7 @@
             const easyPdfRate = s.totalEmp > 0 ? Math.round((s.easyPdfCnt / s.totalEmp) * 100) : 0;
             const companyRate = s.groups > 0 ? Math.round((s.easyPdfCompanyCnt / s.groups) * 100) : 0;
             const notUsing = s.totalEmp - s.easyPdfCnt;
-            
+
             updateChart('easyPdfChart', 'doughnut', {
                 labels: ['사용', '미사용'],
                 datasets: [{
@@ -1083,7 +1098,7 @@
                     legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 }, padding: 10 } },
                     tooltip: {
                         callbacks: {
-                            label: function(context) {
+                            label: function (context) {
                                 const label = context.label || '';
                                 const value = context.parsed || 0;
                                 const percent = s.totalEmp > 0 ? Math.round((value / s.totalEmp) * 100) : 0;
@@ -1093,7 +1108,7 @@
                     }
                 }
             });
-            
+
             // 편리한 연말정산 사용 회사 수 텍스트 업데이트
             document.getElementById('easyPdfCompanyInfo').innerHTML = `
                 <div style="text-align: center; padding: 15px; background: #f8f9fa; border-radius: 8px; margin-top: 10px; cursor: pointer; transition: 0.2s;" 
@@ -1110,7 +1125,7 @@
             const sendMailRate = s.sendUserCnt > 0 ? Math.round((s.sendMailCnt / s.sendUserCnt) * 100) : 0;
             const sendMailCompanyRate = s.groups > 0 ? Math.round((s.sendMailCompanyCnt / s.groups) * 100) : 0;
             const notSendMail = s.sendUserCnt - s.sendMailCnt;
-            
+
             updateChart('sendMailChart', 'doughnut', {
                 labels: ['발송', '미발송'],
                 datasets: [{
@@ -1122,7 +1137,7 @@
                     legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 }, padding: 10 } },
                     tooltip: {
                         callbacks: {
-                            label: function(context) {
+                            label: function (context) {
                                 const label = context.label || '';
                                 const value = context.parsed || 0;
                                 const percent = s.sendUserCnt > 0 ? Math.round((value / s.sendUserCnt) * 100) : 0;
@@ -1132,7 +1147,7 @@
                     }
                 }
             });
-            
+
             // 메일 발송 사용 회사 수 텍스트 업데이트
             document.getElementById('sendMailCompanyInfo').innerHTML = `
                 <div style="text-align: center; padding: 15px; background: #f8f9fa; border-radius: 8px; margin-top: 10px; cursor: pointer; transition: 0.2s;" 
@@ -1235,10 +1250,10 @@
 
         function getStatHtml(info, color, label) {
             if (!info) return '<div style="color:#ddd; text-align:center; font-size:0.85rem;">데이터 없음</div>';
-            
+
             const rate = Math.round((info.adminConfirmCnt / info.totalCnt) * 100) || 0;
             const badgeLabel = label === '계속근무자' ? 'primary' : 'success';
-            
+
             return `
                 <div style="padding: 8px;">
                     <div style="margin-bottom: 10px;">
@@ -1304,31 +1319,99 @@
         }
 
         function sortData(order) {
-            document.querySelectorAll('.btn-sort').forEach(btn => btn.classList.remove('active'));
-            if (window.event && window.event.currentTarget) {
-                window.event.currentTarget.classList.add('active');
+            if (!order) {
+                // 기본 정렬 (원본 순서 복원을 위해 그룹순번으로 정렬)
+                rawData.sort((a, b) => {
+                    const idA = a.그룹순번 || '';
+                    const idB = b.그룹순번 || '';
+                    return idA.localeCompare(idB);
+                });
+            } else {
+                rawData.sort((a, b) => {
+                    let valA, valB;
+
+                    if (filterActive) {
+                        // 필터 ON: 계속근무자(stlTp: "1")만 집계
+                        valA = a.수집정보_parsed
+                            .filter(i => i.txformCd === 'YREND' && i.stlTp === "1")
+                            .reduce((acc, curr) => acc + curr.totalCnt, 0);
+                        valB = b.수집정보_parsed
+                            .filter(i => i.txformCd === 'YREND' && i.stlTp === "1")
+                            .reduce((acc, curr) => acc + curr.totalCnt, 0);
+                    } else {
+                        valA = a.totalSum || 0;
+                        valB = b.totalSum || 0;
+                    }
+
+                    return order === 'desc' ? valB - valA : valA - valB;
+                });
             }
 
-            rawData.sort((a, b) => {
-                let valA, valB;
-                
-                if (filterActive) {
-                    // 필터 ON: 계속근무자(stlTp: "1")만 집계
-                    valA = a.수집정보_parsed
-                        .filter(i => i.txformCd === 'YREND' && i.stlTp === "1")
-                        .reduce((acc, curr) => acc + curr.totalCnt, 0);
-                    valB = b.수집정보_parsed
-                        .filter(i => i.txformCd === 'YREND' && i.stlTp === "1")
-                        .reduce((acc, curr) => acc + curr.totalCnt, 0);
-                } else {
-                    valA = a.totalSum || 0;
-                    valB = b.totalSum || 0;
-                }
-                
-                return order === 'desc' ? valB - valA : valA - valB;
-            });
-            
-            renderDashboard(rawData);
+            // 테이블만 다시 렌더링 (차트/집계는 그대로 유지)
+            renderTableOnly(rawData);
+        }
+
+        function handleSortChange() {
+            const sortValue = document.getElementById('sortSelector').value;
+            sortData(sortValue);
+        }
+
+        function renderTableOnly(data) {
+            const body = document.getElementById('tableBody');
+            body.innerHTML = '';
+
+            // 상세 테이블 표시가 활성화된 경우에만 행 생성
+            if (showDetailTable) {
+                data.forEach(group => {
+                    // YREND 데이터만 필터링
+                    const yrendData = group.수집정보_parsed.filter(i => i.txformCd === 'YREND');
+
+                    // 필터 적용
+                    const targetInfo = filterActive ? yrendData.filter(i => i.stlTp === "1") : yrendData;
+                    if (targetInfo.length === 0 && filterActive) return;
+
+                    // 타입별 집계 함수
+                    const sumByType = (type) => {
+                        const filtered = yrendData.filter(i => i.stlTp === type);
+                        if (filtered.length === 0) return null;
+                        return filtered.reduce((acc, curr) => ({
+                            totalCnt: acc.totalCnt + curr.totalCnt,
+                            waitCnt: acc.waitCnt + curr.waitCnt,
+                            userConfirmCnt: acc.userConfirmCnt + curr.userConfirmCnt,
+                            adminConfirmCnt: acc.adminConfirmCnt + curr.adminConfirmCnt,
+                            cancelConfirmCnt: acc.cancelConfirmCnt + curr.cancelConfirmCnt,
+                            scrapReqTypeMCnt: acc.scrapReqTypeMCnt + curr.scrapReqTypeMCnt,
+                            scrapReqTypeWCnt: acc.scrapReqTypeWCnt + curr.scrapReqTypeWCnt,
+                            pdfupload1Cnt: acc.pdfupload1Cnt + curr.pdfupload1Cnt,
+                            pdfupload2Cnt: acc.pdfupload2Cnt + curr.pdfupload2Cnt,
+                            easyPdfCnt: acc.easyPdfCnt + curr.easyPdfCnt
+                        }), {
+                            totalCnt: 0, waitCnt: 0, userConfirmCnt: 0, adminConfirmCnt: 0,
+                            cancelConfirmCnt: 0, scrapReqTypeMCnt: 0, scrapReqTypeWCnt: 0,
+                            pdfupload1Cnt: 0, pdfupload2Cnt: 0, easyPdfCnt: 0
+                        });
+                    };
+
+                    const type1Combined = sumByType("1");
+                    const type2Combined = sumByType("2");
+
+                    // 테이블 행 생성
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td class="group-cell">
+                            <span class="group-id">${group.그룹순번}</span>
+                            <div class="group-meta">${group.서버명}</div>
+                            <div class="group-meta">수집일: ${group.수집일}</div>
+                            <div class="group-meta" style="color:var(--dark); font-weight:bold; margin-top:4px;">
+                                ${filterActive ? '계속근무자: ' + (type1Combined?.totalCnt || 0) : '전체: ' + group.totalSum}명
+                            </div>
+                        </td>
+                        <td>${getStatHtml(type1Combined, 'var(--primary)', '계속근무자')}</td>
+                        <td>${filterActive ? '<div style="color:#ddd; text-align:center;">필터 적용됨</div>' : getStatHtml(type2Combined, 'var(--success)', '중도퇴직자')}</td>
+                    `;
+                    body.appendChild(row);
+                });
+            }
         }
 
         function toggleFilter() {
@@ -1337,33 +1420,51 @@
             renderDashboard(rawData);
         }
 
+        function toggleDetailTable() {
+            showDetailTable = !showDetailTable;
+            const btn = document.getElementById('detailTableToggle');
+            const section = document.getElementById('detailTableSection');
+
+            if (showDetailTable) {
+                btn.classList.add('active');
+                btn.innerText = "상세 테이블 숨김";
+                section.classList.remove('hidden');
+            } else {
+                btn.classList.remove('active');
+                btn.innerText = "상세 테이블 표시";
+                section.classList.add('hidden');
+            }
+
+            renderDashboard(rawData);
+        }
+
         function showEasyPdfCompanyModal() {
             const modalBody = document.getElementById('easyPdfModalBody');
             const modal = document.getElementById('easyPdfModal');
-            
+
             // SaaS별로 그룹화하여 편리한 연말정산 사용 회사 추출
             const easyPdfCompanies = {};
             let totalEasyPdfUsers = 0; // 전체 사용자 수
-            
+
             rawData.forEach(group => {
                 const yrendData = group.수집정보_parsed.filter(i => i.txformCd === 'YREND');
-                
+
                 // 필터 적용 여부에 따라 데이터 필터링
                 const targetData = filterActive ? yrendData.filter(i => i.stlTp === "1") : yrendData;
-                
+
                 const hasEasyPdf = targetData.some(i => (i.easyPdfCnt || 0) > 0);
-                
+
                 if (hasEasyPdf) {
                     const saasName = group.서버명;
                     if (!easyPdfCompanies[saasName]) {
                         easyPdfCompanies[saasName] = [];
                     }
-                    
+
                     const totalEasyPdf = targetData.reduce((sum, i) => sum + (i.easyPdfCnt || 0), 0);
                     const totalCnt = targetData.reduce((sum, i) => sum + i.totalCnt, 0);
-                    
+
                     totalEasyPdfUsers += totalEasyPdf; // 전체 사용자 수 누적
-                    
+
                     easyPdfCompanies[saasName].push({
                         id: group.그룹순번,
                         name: group.서버명,
@@ -1374,12 +1475,12 @@
                     });
                 }
             });
-            
+
             // 모달 내용 생성
             let html = '';
             const sortedSaas = Object.keys(easyPdfCompanies).sort();
             const totalCompanies = sortedSaas.reduce((sum, saas) => sum + easyPdfCompanies[saas].length, 0);
-            
+
             // 상단 요약 정보 추가
             html += `
                 <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
@@ -1396,11 +1497,11 @@
                     </div>
                 </div>
             `;
-            
+
             sortedSaas.forEach(saasName => {
                 const companies = easyPdfCompanies[saasName];
                 const saasTotal = companies.reduce((sum, c) => sum + c.easyPdfCnt, 0);
-                
+
                 html += `
                     <div class="saas-section">
                         <div class="saas-header">
@@ -1409,7 +1510,7 @@
                         </div>
                         <div class="company-list">
                 `;
-                
+
                 companies.forEach(company => {
                     html += `
                         <div class="company-item">
@@ -1424,17 +1525,17 @@
                         </div>
                     `;
                 });
-                
+
                 html += `
                         </div>
                     </div>
                 `;
             });
-            
+
             if (html === '' || totalCompanies === 0) {
                 html = '<div style="text-align: center; padding: 50px; color: #999;">편리한 연말정산을 사용하는 회사가 없습니다.</div>';
             }
-            
+
             modalBody.innerHTML = html;
             modal.classList.add('active');
         }
@@ -1442,39 +1543,39 @@
         function showSendMailCompanyModal() {
             const modalBody = document.getElementById('sendMailModalBody');
             const modal = document.getElementById('sendMailModal');
-            
+
             // SaaS별로 그룹화하여 메일 발송 사용 회사 추출
             const sendMailCompanies = {};
             let totalMailUsers = 0;
             let totalSmsUsers = 0;
             let totalExmailUsers = 0;
             let totalTargetUsers = 0; // 메일 대상자 (sendUserCnt)
-            
+
             rawData.forEach(group => {
                 const yrendData = group.수집정보_parsed.filter(i => i.txformCd === 'YREND');
-                
+
                 // 필터 적용 여부에 따라 데이터 필터링
                 const targetData = filterActive ? yrendData.filter(i => i.stlTp === "1") : yrendData;
-                
+
                 const hasSendMail = targetData.some(i => (i.sendMailCnt || 0) > 0);
-                
+
                 if (hasSendMail) {
                     const saasName = group.서버명;
                     if (!sendMailCompanies[saasName]) {
                         sendMailCompanies[saasName] = [];
                     }
-                    
+
                     const mailCnt = targetData.reduce((sum, i) => sum + (i.sendMailCnt || 0), 0);
                     const smsCnt = targetData.reduce((sum, i) => sum + (i.sendSmsCnt || 0), 0);
                     const waitCnt = targetData.reduce((sum, i) => sum + (i.sendWaitUserCnt || 0), 0);
                     const userCnt = targetData.reduce((sum, i) => sum + (i.sendUserCnt || 0), 0);
                     const exmailCnt = targetData.reduce((sum, i) => sum + (i.sendExmailUserCnt || 0), 0);
-                    
+
                     totalMailUsers += mailCnt;
                     totalSmsUsers += smsCnt;
                     totalExmailUsers += exmailCnt;
                     totalTargetUsers += userCnt; // 메일 대상자 누적
-                    
+
                     sendMailCompanies[saasName].push({
                         id: group.그룹순번,
                         name: group.서버명,
@@ -1488,12 +1589,12 @@
                     });
                 }
             });
-            
+
             // 모달 내용 생성
             let html = '';
             const sortedSaas = Object.keys(sendMailCompanies).sort();
             const totalCompanies = sortedSaas.reduce((sum, saas) => sum + sendMailCompanies[saas].length, 0);
-            
+
             // 상단 요약 정보 추가
             html += `
                 <div style="background: linear-gradient(135deg, #007bff 0%, #0056b3 100%); color: white; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
@@ -1525,11 +1626,11 @@
                     </div>
                 </div>
             `;
-            
+
             sortedSaas.forEach(saasName => {
                 const companies = sendMailCompanies[saasName];
                 const saasMailTotal = companies.reduce((sum, c) => sum + c.mailCnt, 0);
-                
+
                 html += `
                     <div class="saas-section">
                         <div class="saas-header">
@@ -1538,7 +1639,7 @@
                         </div>
                         <div class="company-list">
                 `;
-                
+
                 companies.forEach(company => {
                     html += `
                         <div class="company-item">
@@ -1555,17 +1656,17 @@
                         </div>
                     `;
                 });
-                
+
                 html += `
                         </div>
                     </div>
                 `;
             });
-            
+
             if (html === '' || totalCompanies === 0) {
                 html = '<div style="text-align: center; padding: 50px; color: #999;">메일 발송을 사용하는 회사가 없습니다.</div>';
             }
-            
+
             modalBody.innerHTML = html;
             modal.classList.add('active');
         }
