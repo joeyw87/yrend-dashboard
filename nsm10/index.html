@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>연말정산 시즌 요청/접수 데이터 현황 분석</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <h1><i class="fas fa-file-invoice-dollar"></i> 연말정산 시즌 요청/접수 데이터 현황 분석</h1>
+            <p class="subtitle">연말정산 데이터 파일을 업로드하여 현황과 집계를 확인하세요</p>
+            <p class="notice"><i class="fas fa-info-circle"></i> 외부 요청 접수(수정승인처리)건에 대해서만 집계합니다. (내부 접수 처리건은 제외 됨)</p>
+        </header>
+
+        <!-- Upload Section -->
+        <section class="upload-section">
+            <div class="upload-box" id="uploadBox">
+                <i class="fas fa-cloud-upload-alt"></i>
+                <h3>엑셀 파일 업로드</h3>
+                <p>클릭하거나 파일을 드래그하여 업로드하세요</p>
+                <input type="file" id="fileInput" accept=".xlsx, .xls" hidden>
+                <div class="button-group">
+                    <button class="btn btn-primary" id="selectFileBtn">
+                        <i class="fas fa-folder-open"></i> 파일 선택
+                    </button>
+                    <button class="btn btn-secondary" id="loadSampleBtn">
+                        <i class="fas fa-file-download"></i> 샘플 데이터 로드
+                    </button>
+                </div>
+            </div>
+            <div class="file-info" id="fileInfo" style="display: none;">
+                <i class="fas fa-file-excel"></i>
+                <span id="fileName"></span>
+                <button class="btn btn-small btn-danger" onclick="resetUpload()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        </section>
+
+        <!-- Summary Cards -->
+        <section class="summary-section" id="summarySection" style="display: none;">
+            <div class="card">
+                <div class="card-icon blue">
+                    <i class="fas fa-list"></i>
+                </div>
+                <div class="card-content">
+                    <h3 id="totalCount">0</h3>
+                    <p>전체 요청</p>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-icon green">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="card-content">
+                    <h3 id="completedCount">0</h3>
+                    <p>완료</p>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-icon orange">
+                    <i class="fas fa-spinner"></i>
+                </div>
+                <div class="card-content">
+                    <h3 id="inProgressCount">0</h3>
+                    <p>진행중</p>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-icon red">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="card-content">
+                    <h3 id="pendingCount">0</h3>
+                    <p>대기</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Date Range Info -->
+        <section class="date-range-section" id="dateRangeSection" style="display: none;">
+            <div class="date-range-card">
+                <i class="fas fa-calendar-check"></i>
+                <span class="date-range-text">
+                    <strong>요청일 기간:</strong> 
+                    <span id="dateRangeText">-</span>
+                </span>
+            </div>
+        </section>
+
+        <!-- Tabs -->
+        <section class="tabs-section" id="tabsSection" style="display: none;">
+            <div class="tabs">
+                <button class="tab-btn active" data-tab="data">
+                    <i class="fas fa-table"></i> 데이터 현황
+                </button>
+                <button class="tab-btn" data-tab="analytics">
+                    <i class="fas fa-chart-bar"></i> 집계 분석
+                </button>
+            </div>
+
+            <!-- Data Tab -->
+            <div class="tab-content active" id="dataTab">
+                <div class="table-controls">
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="searchInput" placeholder="검색...">
+                    </div>
+                    <div class="filter-box">
+                        <select id="statusFilter">
+                            <option value="">전체 진행상태</option>
+                        </select>
+                        <select id="requestTypeFilter">
+                            <option value="">전체 요청구분</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="table-wrapper">
+                    <table id="dataTable">
+                        <thead>
+                            <tr>
+                                <th>No.</th>
+                                <th>요청일</th>
+                                <th>요청구분</th>
+                                <th>처리구분</th>
+                                <th>파일코드</th>
+                                <th>파일명</th>
+                                <th>진행상태</th>
+                            </tr>
+                        </thead>
+                        <tbody id="dataTableBody">
+                        </tbody>
+                    </table>
+                </div>
+                <div class="pagination" id="pagination"></div>
+            </div>
+
+            <!-- Analytics Tab -->
+            <div class="tab-content" id="analyticsTab">
+                <!-- 요청일자별 집계 차트 (전체 너비) -->
+                <div class="chart-container-full">
+                    <h3><i class="fas fa-calendar-alt"></i> 요청일자별 집계</h3>
+                    <div style="position: relative; height: 400px;">
+                        <canvas id="dailyChart"></canvas>
+                    </div>
+                </div>
+                
+                <div class="charts-grid">
+                    <div class="chart-container">
+                        <h3>진행상태별 분포</h3>
+                        <div style="position: relative; height: 300px;">
+                            <canvas id="statusChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <h3>일자별 요청 추이</h3>
+                        <div style="position: relative; height: 300px;">
+                            <canvas id="dateChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <h3>요청구분별 분포</h3>
+                        <div style="position: relative; height: 300px;">
+                            <canvas id="requestTypeChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <h3>처리구분별 분포</h3>
+                        <div style="position: relative; height: 300px;">
+                            <canvas id="processTypeChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <h3>문의 분포 (상위 10개)</h3>
+                        <div style="position: relative; height: 300px;">
+                            <canvas id="fileNameChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <h3>개발진행 현황</h3>
+                        <div style="position: relative; height: 300px;">
+                            <canvas id="progressChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>&copy; 2026 Yrend Dashboard. Created by Douzone 조영욱. (with AI assistance)</p>
+        </footer>
+    </div>
+
+    <script src="js/main.js"></script>
+</body>
+</html>
