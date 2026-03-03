@@ -167,7 +167,7 @@
             gap: 20px;
             margin-bottom: 20px;
         }
-        
+
         /* 스크래핑 & PDF 섹션은 4개 컬럼 */
         #chartSection2 .chart-row {
             grid-template-columns: repeat(4, 1fr);
@@ -182,11 +182,11 @@
             display: flex;
             flex-direction: column;
         }
-        
+
         .chart-card.tall {
             height: 450px;
         }
-        
+
         /* 스크래핑 & PDF 섹션의 카드들은 동일한 높이로 */
         #chartSection2 .chart-card {
             height: 420px;
@@ -233,7 +233,7 @@
             font-weight: 600;
             transition: 0.2s;
         }
-        
+
         .btn-filter {
             padding: 10px 18px;
             font-size: 0.9rem;
@@ -294,11 +294,11 @@
             border-radius: 50%;
         }
 
-        .toggle-switch input:checked + .toggle-slider {
+        .toggle-switch input:checked+.toggle-slider {
             background-color: var(--primary);
         }
 
-        .toggle-switch input:checked + .toggle-slider:before {
+        .toggle-switch input:checked+.toggle-slider:before {
             transform: translateX(20px);
         }
 
@@ -306,8 +306,104 @@
             background-color: #999;
         }
 
-        .toggle-switch input:checked + .toggle-slider:hover {
+        .toggle-switch input:checked+.toggle-slider:hover {
             background-color: #0056b3;
+        }
+
+        /* 폰트 크기 조절 버튼 */
+        .font-size-controls {
+            display: flex;
+            gap: 3px;
+            background: white;
+            padding: 4px;
+            border-radius: 6px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+        }
+
+        .font-size-btn {
+            width: 24px;
+            height: 24px;
+            border: 1px solid #ddd;
+            background: white;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #555;
+        }
+
+        .font-size-btn:hover {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+            transform: scale(1.1);
+        }
+
+        .font-size-btn.reset {
+            font-size: 0.85rem;
+        }
+
+        .font-size-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* 폰트 크기 조절을 위한 CSS 변수 */
+        :root {
+            --value-font-size: 32px;
+            --title-font-size: 13.6px;
+            --subtext-font-size: 12.8px;
+            --section-title-font-size: 20.8px;
+            --chart-title-font-size: 15.2px;
+            --table-font-size: 13.6px;
+        }
+
+        /* 폰트 크기에 따른 제목 크기 조정 */
+        /* 상단 헤더 영역은 폰트 크기 고정 */
+        .header h1 {
+            font-size: 1.8rem !important;
+        }
+
+        .btn-parser,
+        .btn-download,
+        .btn-file,
+        .upload-area,
+        .upload-area #fileName {
+            font-size: 0.9rem !important;
+        }
+
+        .filter-toggle-container,
+        .toggle-label {
+            font-size: 0.85rem !important;
+        }
+
+        /* 요약 카드 및 본문 요소는 CSS 변수 사용 */
+        .summary-card .value {
+            font-size: var(--value-font-size) !important;
+        }
+
+        .summary-card h3 {
+            font-size: var(--title-font-size) !important;
+        }
+
+        .summary-card .sub-text {
+            font-size: var(--subtext-font-size) !important;
+        }
+
+        .section-title {
+            font-size: var(--section-title-font-size) !important;
+        }
+
+        .chart-card h4 {
+            font-size: var(--chart-title-font-size) !important;
+        }
+
+        th,
+        td {
+            font-size: var(--table-font-size) !important;
         }
 
         .btn-sort:hover,
@@ -458,20 +554,20 @@
                 align-items: stretch;
             }
 
-            .header > div:first-child {
+            .header>div:first-child {
                 flex-direction: column;
                 gap: 10px;
             }
 
             /* 모바일에서 버튼 영역과 업로드 영역 분리 */
-            .header > div:last-child {
+            .header>div:last-child {
                 display: flex;
                 flex-direction: column;
                 gap: 10px;
             }
 
             /* 버튼 컨테이너 */
-            .header > div:last-child > a {
+            .header>div:last-child>a {
                 width: 100%;
                 margin: 0;
             }
@@ -565,11 +661,26 @@
                 width: 14px;
             }
 
-            .toggle-switch input:checked + .toggle-slider:before {
+            .toggle-switch input:checked+.toggle-slider:before {
                 transform: translateX(16px);
             }
 
             .toggle-label {
+                font-size: 0.75rem;
+            }
+
+            /* 폰트 크기 조절 버튼 */
+            .font-size-controls {
+                padding: 3px;
+            }
+
+            .font-size-btn {
+                width: 22px;
+                height: 22px;
+                font-size: 0.8rem;
+            }
+
+            .font-size-btn.reset {
                 font-size: 0.75rem;
             }
 
@@ -790,7 +901,7 @@
 
     <div class="top-container">
         <div class="header">
-            <div style="display: flex; align-items: center; gap: 15px;">
+            <div style="display: flex; align-items: center; gap: 15px; flex: 1;">
                 <h1>📊 2025 연말정산 진행현황 통합 대시보드</h1>
                 <div class="filter-toggle-container" id="filterToggleContainer" style="display: none;">
                     <label class="toggle-switch">
@@ -801,6 +912,11 @@
                 </div>
             </div>
             <div style="display: flex; gap: 15px; align-items: center;">
+                <div class="font-size-controls">
+                    <button class="font-size-btn" onclick="decreaseFontSize()" title="글자 크기 축소">-</button>
+                    <button class="font-size-btn" onclick="increaseFontSize()" title="글자 크기 확대">+</button>
+                    <button class="font-size-btn reset" onclick="resetFontSize()" title="기본 크기로 복원">↺</button>
+                </div>
                 <a href="./fileParser.html" class="btn-parser" target="_blank">
                     🔄Excel 변환
                 </a>
@@ -912,7 +1028,8 @@
             <h2 class="section-title">🏢 그룹별 진행률 TOP 10</h2>
             <div class="chart-row">
                 <div class="chart-card" style="grid-column: 1 / -1; height: 450px;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
                         <h4 style="margin: 0; border: none; padding: 0;">SaaS별 진행률 (관리자 마감 기준)</h4>
                         <select id="saasSelector" onchange="updateSaasChart()"
                             style="padding: 6px 12px; border-radius: 6px; border: 1px solid #ddd; font-size: 0.85rem;">
@@ -937,7 +1054,7 @@
     <div class="chart-section hidden" id="detailTableSection">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
             <h2 class="section-title" style="margin: 0; border: none; padding: 0;">📋 상세 고객사 그룹 테이블</h2>
-            <select id="sortSelector" onchange="handleSortChange()" 
+            <select id="sortSelector" onchange="handleSortChange()"
                 style="padding: 8px 12px; border-radius: 6px; border: 1px solid #ddd; font-size: 0.85rem; font-weight: 600; cursor: pointer; background: white; transition: 0.2s;">
                 <option value="">정렬: 기본</option>
                 <option value="desc">정렬: 대상자 많은 순</option>
@@ -966,7 +1083,7 @@
 
     <!-- 푸터 -->
     <div style="text-align: center; padding: 30px 20px; color: #999; font-size: 0.8rem;">
-        © 2026 Yrend Dashboard. Created by DOUZONE 조영욱. (with AI assistance)
+        © 2026 Yrend Dashboard. Created by 더존비즈온 조영욱. (with AI assistance)
     </div>
 
     <!-- 편리한 연말정산 사용 회사 모달 -->
@@ -1001,6 +1118,58 @@
         let showDetailTable = false; // 최초 진입 시 상세 테이블 숨김 (빠른 로딩)
         let charts = {};
         let saasGroups = {};
+        let currentFontSize = 16; // 기본 폰트 크기 (px)
+        const fontSizeStep = 2; // 한 번에 변경되는 크기 (px)
+
+        function increaseFontSize() {
+            currentFontSize += fontSizeStep;
+            applyFontSize();
+        }
+
+        function decreaseFontSize() {
+            currentFontSize -= fontSizeStep;
+            applyFontSize();
+        }
+
+        function resetFontSize() {
+            currentFontSize = 16; // 기본 크기로 리셋
+            applyFontSize();
+        }
+
+        function applyFontSize() {
+            const body = document.body;
+
+            // 기본 폰트 크기 설정
+            body.style.fontSize = currentFontSize + 'px';
+
+            // 요약 카드 값 크기 (비례 계산)
+            const valueFontSize = currentFontSize * 2; // 기본의 2배
+            const titleFontSize = currentFontSize * 0.85; // 기본의 0.85배
+            const subTextFontSize = currentFontSize * 0.8; // 기본의 0.8배
+            const sectionTitleFontSize = currentFontSize * 1.3; // 기본의 1.3배
+            const chartTitleFontSize = currentFontSize * 0.95; // 기본의 0.95배
+            const tableFontSize = currentFontSize * 0.85; // 기본의 0.85배
+
+            // CSS 변수로 설정
+            body.style.setProperty('--value-font-size', valueFontSize + 'px');
+            body.style.setProperty('--title-font-size', titleFontSize + 'px');
+            body.style.setProperty('--subtext-font-size', subTextFontSize + 'px');
+            body.style.setProperty('--section-title-font-size', sectionTitleFontSize + 'px');
+            body.style.setProperty('--chart-title-font-size', chartTitleFontSize + 'px');
+            body.style.setProperty('--table-font-size', tableFontSize + 'px');
+
+            // 로컬 스토리지에 저장 (사용자 설정 유지)
+            localStorage.setItem('dashboardFontSize', currentFontSize);
+        }
+
+        // 페이지 로드 시 저장된 폰트 크기 복원
+        window.addEventListener('DOMContentLoaded', function () {
+            const savedFontSize = localStorage.getItem('dashboardFontSize');
+            if (savedFontSize !== null) {
+                currentFontSize = parseInt(savedFontSize);
+                applyFontSize();
+            }
+        });
 
         // 파일 업로드 이벤트
         document.getElementById('jsonInput').addEventListener('change', function (e) {
@@ -1013,13 +1182,13 @@
                 try {
                     const data = JSON.parse(event.target.result);
                     rawData = Array.isArray(data) ? data : Object.values(data).flat();
-                    
+
                     // YREND 데이터만 추출하여 totalSum 계산
                     rawData.forEach(group => {
                         const yrendData = group.수집정보_parsed.filter(i => i.txformCd === 'YREND');
                         group.totalSum = yrendData.reduce((acc, curr) => acc + curr.totalCnt, 0);
                     });
-                    
+
                     // UI 표시
                     document.getElementById('summarySection').classList.remove('hidden');
                     document.getElementById('chartSection1').classList.remove('hidden');
@@ -1027,7 +1196,7 @@
                     document.getElementById('chartSection3').classList.remove('hidden');
                     document.getElementById('controls').classList.remove('hidden');
                     document.getElementById('filterToggleContainer').style.display = 'flex';
-                    
+
                     renderDashboard(rawData);
                 } catch (e) {
                     alert("JSON 파싱 오류가 발생했습니다: " + e.message);
@@ -1039,7 +1208,7 @@
         function renderDashboard(data) {
             const body = document.getElementById('tableBody');
             body.innerHTML = '';
-            
+
             // 집계 변수 초기화
             let stats = {
                 groups: 0,
@@ -1063,13 +1232,13 @@
                 sendExmailUserCnt: 0,  // 외부메일 사용자
                 sendMailCompanyCnt: 0  // 메일 발송 사용 회사 수
             };
-            
+
             saasGroups = {};
 
             data.forEach(group => {
                 // YREND 데이터만 필터링
                 const yrendData = group.수집정보_parsed.filter(i => i.txformCd === 'YREND');
-                
+
                 // 필터 적용
                 const targetInfo = filterActive ? yrendData.filter(i => i.stlTp === "1") : yrendData;
                 if (targetInfo.length === 0 && filterActive) return;
@@ -1108,11 +1277,11 @@
                     stats.userConfirmCnt += i.userConfirmCnt;
                     stats.adminConfirmCnt += i.adminConfirmCnt;
                     stats.cancelConfirmCnt += i.cancelConfirmCnt;
-                    
+
                     if (i.stlTp === "1") stats.type1Cnt += i.totalCnt;
                     if (i.stlTp === "2") stats.type2Cnt += i.totalCnt;
                 });
-                
+
                 // 스크래핑, PDF, 편리한 연말정산도 필터 적용 (targetInfo 사용)
                 let hasEasyPdf = false;
                 let hasSendMail = false;
@@ -1122,29 +1291,29 @@
                     stats.pdfAdminCnt += i.pdfupload1Cnt || 0;
                     stats.pdfUserCnt += i.pdfupload2Cnt || 0;
                     stats.easyPdfCnt += i.easyPdfCnt || 0;
-                    
+
                     // 메일 발송 현황 집계
                     stats.sendMailCnt += i.sendMailCnt || 0;
                     stats.sendSmsCnt += i.sendSmsCnt || 0;
                     stats.sendWaitUserCnt += i.sendWaitUserCnt || 0;
                     stats.sendUserCnt += i.sendUserCnt || 0;
                     stats.sendExmailUserCnt += i.sendExmailUserCnt || 0;
-                    
+
                     // 편리한 연말정산 사용 회사 카운트 (1명이라도 사용하면 카운트)
                     if ((i.easyPdfCnt || 0) > 0) {
                         hasEasyPdf = true;
                     }
-                    
+
                     // 메일 발송 사용 회사 카운트
                     if ((i.sendMailCnt || 0) > 0) {
                         hasSendMail = true;
                     }
                 });
-                
+
                 if (hasEasyPdf) {
                     stats.easyPdfCompanyCnt++;
                 }
-                
+
                 if (hasSendMail) {
                     stats.sendMailCompanyCnt++;
                 }
@@ -1152,10 +1321,10 @@
                 // SaaS별 그룹화
                 const saasName = group.서버명;
                 if (!saasGroups[saasName]) saasGroups[saasName] = [];
-                
+
                 const confirm = targetInfo.reduce((a, b) => a + b.adminConfirmCnt, 0);
                 const total = targetInfo.reduce((a, b) => a + b.totalCnt, 0);
-                
+
                 saasGroups[saasName].push({
                     id: group.그룹순번,
                     name: group.서버명,
@@ -1185,7 +1354,7 @@
 
             // SaaS 선택 드롭다운 업데이트
             updateSaasSelector();
-            
+
             // 대시보드 업데이트
             updateSummary(stats);
             initCharts(stats);
@@ -1198,7 +1367,7 @@
             document.getElementById('totalAdminConfirm').innerText = s.adminConfirmCnt.toLocaleString();
             document.getElementById('totalUserConfirm').innerText = s.userConfirmCnt.toLocaleString();
             document.getElementById('totalCancel').innerText = s.cancelConfirmCnt.toLocaleString();
-            
+
             document.getElementById('waitRate').innerText = `${Math.round((s.waitCnt / s.totalEmp) * 100) || 0}%`;
             document.getElementById('adminRate').innerText = `${Math.round((s.adminConfirmCnt / s.totalEmp) * 100) || 0}%`;
             document.getElementById('userRate').innerText = `${Math.round((s.userConfirmCnt / s.totalEmp) * 100) || 0}%`;
@@ -1279,7 +1448,7 @@
                     legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 }, padding: 10 } },
                     tooltip: {
                         callbacks: {
-                            label: function(context) {
+                            label: function (context) {
                                 const label = context.label || '';
                                 const value = context.parsed || 0;
                                 return `${label}: ${value.toLocaleString()}건`;
@@ -1293,7 +1462,7 @@
             const easyPdfRate = s.totalEmp > 0 ? Math.round((s.easyPdfCnt / s.totalEmp) * 100) : 0;
             const companyRate = s.groups > 0 ? Math.round((s.easyPdfCompanyCnt / s.groups) * 100) : 0;
             const notUsing = s.totalEmp - s.easyPdfCnt;
-            
+
             updateChart('easyPdfChart', 'doughnut', {
                 labels: ['사용', '미사용'],
                 datasets: [{
@@ -1305,7 +1474,7 @@
                     legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 }, padding: 10 } },
                     tooltip: {
                         callbacks: {
-                            label: function(context) {
+                            label: function (context) {
                                 const label = context.label || '';
                                 const value = context.parsed || 0;
                                 const percent = s.totalEmp > 0 ? Math.round((value / s.totalEmp) * 100) : 0;
@@ -1315,7 +1484,7 @@
                     }
                 }
             });
-            
+
             // 편리한 연말정산 사용 회사 수 텍스트 업데이트
             document.getElementById('easyPdfCompanyInfo').innerHTML = `
                 <div style="text-align: center; padding: 15px; background: #f8f9fa; border-radius: 8px; margin-top: 10px; cursor: pointer; transition: 0.2s;" 
@@ -1332,7 +1501,7 @@
             const sendMailRate = s.sendUserCnt > 0 ? Math.round((s.sendMailCnt / s.sendUserCnt) * 100) : 0;
             const sendMailCompanyRate = s.groups > 0 ? Math.round((s.sendMailCompanyCnt / s.groups) * 100) : 0;
             const notSendMail = s.sendUserCnt - s.sendMailCnt;
-            
+
             updateChart('sendMailChart', 'doughnut', {
                 labels: ['발송', '미발송'],
                 datasets: [{
@@ -1344,7 +1513,7 @@
                     legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 }, padding: 10 } },
                     tooltip: {
                         callbacks: {
-                            label: function(context) {
+                            label: function (context) {
                                 const label = context.label || '';
                                 const value = context.parsed || 0;
                                 const percent = s.sendUserCnt > 0 ? Math.round((value / s.sendUserCnt) * 100) : 0;
@@ -1354,7 +1523,7 @@
                     }
                 }
             });
-            
+
             // 메일 발송 사용 회사 수 텍스트 업데이트
             document.getElementById('sendMailCompanyInfo').innerHTML = `
                 <div style="text-align: center; padding: 15px; background: #f8f9fa; border-radius: 8px; margin-top: 10px; cursor: pointer; transition: 0.2s;" 
@@ -1457,10 +1626,10 @@
 
         function getStatHtml(info, color, label) {
             if (!info) return '<div style="color:#ddd; text-align:center; font-size:0.85rem;">데이터 없음</div>';
-            
+
             const rate = Math.round((info.adminConfirmCnt / info.totalCnt) * 100) || 0;
             const badgeLabel = label === '계속근무자' ? 'primary' : 'success';
-            
+
             return `
                 <div style="padding: 8px;">
                     <div style="margin-bottom: 10px;">
@@ -1536,7 +1705,7 @@
             } else {
                 rawData.sort((a, b) => {
                     let valA, valB;
-                    
+
                     if (filterActive) {
                         // 필터 ON: 계속근무자(stlTp: "1")만 집계
                         valA = a.수집정보_parsed
@@ -1549,11 +1718,11 @@
                         valA = a.totalSum || 0;
                         valB = b.totalSum || 0;
                     }
-                    
+
                     return order === 'desc' ? valB - valA : valA - valB;
                 });
             }
-            
+
             // 테이블만 다시 렌더링 (차트/집계는 그대로 유지)
             renderTableOnly(rawData);
         }
@@ -1572,7 +1741,7 @@
                 data.forEach(group => {
                     // YREND 데이터만 필터링
                     const yrendData = group.수집정보_parsed.filter(i => i.txformCd === 'YREND');
-                    
+
                     // 필터 적용
                     const targetInfo = filterActive ? yrendData.filter(i => i.stlTp === "1") : yrendData;
                     if (targetInfo.length === 0 && filterActive) return;
@@ -1648,30 +1817,30 @@
         function showEasyPdfCompanyModal() {
             const modalBody = document.getElementById('easyPdfModalBody');
             const modal = document.getElementById('easyPdfModal');
-            
+
             // SaaS별로 그룹화하여 편리한 연말정산 사용 회사 추출
             const easyPdfCompanies = {};
             let totalEasyPdfUsers = 0; // 전체 사용자 수
-            
+
             rawData.forEach(group => {
                 const yrendData = group.수집정보_parsed.filter(i => i.txformCd === 'YREND');
-                
+
                 // 필터 적용 여부에 따라 데이터 필터링
                 const targetData = filterActive ? yrendData.filter(i => i.stlTp === "1") : yrendData;
-                
+
                 const hasEasyPdf = targetData.some(i => (i.easyPdfCnt || 0) > 0);
-                
+
                 if (hasEasyPdf) {
                     const saasName = group.서버명;
                     if (!easyPdfCompanies[saasName]) {
                         easyPdfCompanies[saasName] = [];
                     }
-                    
+
                     const totalEasyPdf = targetData.reduce((sum, i) => sum + (i.easyPdfCnt || 0), 0);
                     const totalCnt = targetData.reduce((sum, i) => sum + i.totalCnt, 0);
-                    
+
                     totalEasyPdfUsers += totalEasyPdf; // 전체 사용자 수 누적
-                    
+
                     easyPdfCompanies[saasName].push({
                         id: group.그룹순번,
                         name: group.서버명,
@@ -1682,12 +1851,12 @@
                     });
                 }
             });
-            
+
             // 모달 내용 생성
             let html = '';
             const sortedSaas = Object.keys(easyPdfCompanies).sort();
             const totalCompanies = sortedSaas.reduce((sum, saas) => sum + easyPdfCompanies[saas].length, 0);
-            
+
             // 상단 요약 정보 추가
             html += `
                 <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
@@ -1704,11 +1873,11 @@
                     </div>
                 </div>
             `;
-            
+
             sortedSaas.forEach(saasName => {
                 const companies = easyPdfCompanies[saasName];
                 const saasTotal = companies.reduce((sum, c) => sum + c.easyPdfCnt, 0);
-                
+
                 html += `
                     <div class="saas-section">
                         <div class="saas-header">
@@ -1717,7 +1886,7 @@
                         </div>
                         <div class="company-list">
                 `;
-                
+
                 companies.forEach(company => {
                     html += `
                         <div class="company-item">
@@ -1732,17 +1901,17 @@
                         </div>
                     `;
                 });
-                
+
                 html += `
                         </div>
                     </div>
                 `;
             });
-            
+
             if (html === '' || totalCompanies === 0) {
                 html = '<div style="text-align: center; padding: 50px; color: #999;">편리한 연말정산을 사용하는 회사가 없습니다.</div>';
             }
-            
+
             modalBody.innerHTML = html;
             modal.classList.add('active');
         }
@@ -1750,39 +1919,39 @@
         function showSendMailCompanyModal() {
             const modalBody = document.getElementById('sendMailModalBody');
             const modal = document.getElementById('sendMailModal');
-            
+
             // SaaS별로 그룹화하여 메일 발송 사용 회사 추출
             const sendMailCompanies = {};
             let totalMailUsers = 0;
             let totalSmsUsers = 0;
             let totalExmailUsers = 0;
             let totalTargetUsers = 0; // 메일 대상자 (sendUserCnt)
-            
+
             rawData.forEach(group => {
                 const yrendData = group.수집정보_parsed.filter(i => i.txformCd === 'YREND');
-                
+
                 // 필터 적용 여부에 따라 데이터 필터링
                 const targetData = filterActive ? yrendData.filter(i => i.stlTp === "1") : yrendData;
-                
+
                 const hasSendMail = targetData.some(i => (i.sendMailCnt || 0) > 0);
-                
+
                 if (hasSendMail) {
                     const saasName = group.서버명;
                     if (!sendMailCompanies[saasName]) {
                         sendMailCompanies[saasName] = [];
                     }
-                    
+
                     const mailCnt = targetData.reduce((sum, i) => sum + (i.sendMailCnt || 0), 0);
                     const smsCnt = targetData.reduce((sum, i) => sum + (i.sendSmsCnt || 0), 0);
                     const waitCnt = targetData.reduce((sum, i) => sum + (i.sendWaitUserCnt || 0), 0);
                     const userCnt = targetData.reduce((sum, i) => sum + (i.sendUserCnt || 0), 0);
                     const exmailCnt = targetData.reduce((sum, i) => sum + (i.sendExmailUserCnt || 0), 0);
-                    
+
                     totalMailUsers += mailCnt;
                     totalSmsUsers += smsCnt;
                     totalExmailUsers += exmailCnt;
                     totalTargetUsers += userCnt; // 메일 대상자 누적
-                    
+
                     sendMailCompanies[saasName].push({
                         id: group.그룹순번,
                         name: group.서버명,
@@ -1796,12 +1965,12 @@
                     });
                 }
             });
-            
+
             // 모달 내용 생성
             let html = '';
             const sortedSaas = Object.keys(sendMailCompanies).sort();
             const totalCompanies = sortedSaas.reduce((sum, saas) => sum + sendMailCompanies[saas].length, 0);
-            
+
             // 상단 요약 정보 추가
             html += `
                 <div style="background: linear-gradient(135deg, #007bff 0%, #0056b3 100%); color: white; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
@@ -1833,11 +2002,11 @@
                     </div>
                 </div>
             `;
-            
+
             sortedSaas.forEach(saasName => {
                 const companies = sendMailCompanies[saasName];
                 const saasMailTotal = companies.reduce((sum, c) => sum + c.mailCnt, 0);
-                
+
                 html += `
                     <div class="saas-section">
                         <div class="saas-header">
@@ -1846,7 +2015,7 @@
                         </div>
                         <div class="company-list">
                 `;
-                
+
                 companies.forEach(company => {
                     html += `
                         <div class="company-item">
@@ -1863,17 +2032,17 @@
                         </div>
                     `;
                 });
-                
+
                 html += `
                         </div>
                     </div>
                 `;
             });
-            
+
             if (html === '' || totalCompanies === 0) {
                 html = '<div style="text-align: center; padding: 50px; color: #999;">메일 발송을 사용하는 회사가 없습니다.</div>';
             }
-            
+
             modalBody.innerHTML = html;
             modal.classList.add('active');
         }
