@@ -967,7 +967,10 @@
 
         <!-- 요약 카드 -->
         <div class="summary-wrapper hidden" id="summarySection">
-            <div class="summary-card" style="border-top-color: var(--dark);">
+            <div class="summary-card" style="border-top-color: var(--dark); cursor: pointer; transition: 0.2s;"
+                onclick="showServiceUsageModal()"
+                onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='0 6px 20px rgba(0,0,0,0.15)';"
+                onmouseout="this.style.transform=''; this.style.boxShadow='';">
                 <h3>대상 그룹수</h3>
                 <p class="value" id="totalGroups">0</p>
                 <span class="sub-text">Companies</span>
@@ -1132,6 +1135,19 @@
                 <button class="modal-close" onclick="closeModal(null, 'electronicFilingModal')">&times;</button>
             </div>
             <div class="modal-body" id="electronicFilingModalBody">
+                <!-- 동적으로 생성 -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 서비스 사용 현황 모달 -->
+    <div class="modal-overlay" id="serviceUsageModal" onclick="closeModal(event, 'serviceUsageModal')">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h3>📋 서비스 사용 현황</h3>
+                <button class="modal-close" onclick="closeModal(null, 'serviceUsageModal')">&times;</button>
+            </div>
+            <div class="modal-body" id="serviceUsageModalBody">
                 <!-- 동적으로 생성 -->
             </div>
         </div>
@@ -1586,15 +1602,18 @@
             `;
 
             // 7. 원천징수영수증 메일 발송 현황
-            const sendMailRate = s.sendUserCnt > 0 ? Math.round((s.sendMailCnt / s.sendUserCnt) * 100) : 0;
+            // sendMailCnt: 메일 발송 대상자 (전체)
+            // sendUserCnt: 발송 완료된 대상자
+            const completedSend = s.sendUserCnt;  // 발송 완료
+            const notSendYet = s.sendMailCnt - s.sendUserCnt;  // 미발송 (대상자 - 완료)
+            const sendRate = s.sendMailCnt > 0 ? Math.round((completedSend / s.sendMailCnt) * 100) : 0;
             const sendMailCompanyRate = s.groups > 0 ? Math.round((s.sendMailCompanyCnt / s.groups) * 100) : 0;
-            const notSendMail = s.sendUserCnt - s.sendMailCnt;
 
             updateChart('sendMailChart', 'doughnut', {
-                labels: ['발송', '미발송'],
+                labels: ['발송완료', '미발송'],
                 datasets: [{
-                    data: [s.sendMailCnt, notSendMail],
-                    backgroundColor: ['#007bff', '#e9ecef']
+                    data: [completedSend, notSendYet],
+                    backgroundColor: ['#28a745', '#e9ecef']
                 }]
             }, {
                 plugins: {
@@ -1604,7 +1623,7 @@
                             label: function (context) {
                                 const label = context.label || '';
                                 const value = context.parsed || 0;
-                                const percent = s.sendUserCnt > 0 ? Math.round((value / s.sendUserCnt) * 100) : 0;
+                                const percent = s.sendMailCnt > 0 ? Math.round((value / s.sendMailCnt) * 100) : 0;
                                 return `${label}: ${value.toLocaleString()}명 (${percent}%)`;
                             }
                         }
@@ -1614,7 +1633,12 @@
 
             // 메일 발송 사용 회사 수 텍스트 업데이트
             document.getElementById('sendMailCompanyInfo').innerHTML = `
-                <div style="text-align: center; padding: 15px; background: #f8f9fa; border-radius: 8px; margin-top: 10px; cursor: pointer; transition: 0.2s;" 
+                <div style="font-size: 0.75rem; color: #666; margin-bottom: 8px; text-align: left; line-height: 1.6;">
+                    전체 발송 대상자: <span style="font-weight: bold; color: #007bff;">${s.sendMailCnt.toLocaleString()}명</span> | 
+                    발송완료: <span style="font-weight: bold; color: #28a745;">${completedSend.toLocaleString()}명</span> | 
+                    외부메일: <span style="font-weight: bold; color: #fd7e14;">${s.sendExmailUserCnt.toLocaleString()}명</span>
+                </div>
+                <div style="text-align: center; padding: 15px; background: #f8f9fa; border-radius: 8px; cursor: pointer; transition: 0.2s;" 
                      onmouseover="this.style.background='#e9ecef'" 
                      onmouseout="this.style.background='#f8f9fa'"
                      onclick="showSendMailCompanyModal()">
@@ -2138,6 +2162,228 @@
         function closeModal(event, modalId) {
             const modal = document.getElementById(modalId);
             modal.classList.remove('active');
+        }
+
+        // 서비스 사용 현황 모달
+        function showServiceUsageModal() {
+            const modalBody = document.getElementById('serviceUsageModalBody');
+            const modal = document.getElementById('serviceUsageModal');
+
+            if (!rawData || rawData.length === 0) {
+                modalBody.innerHTML = '<div style="text-align: center; padding: 50px; color: #999;">데이터를 먼저 업로드해주세요.</div>';
+                modal.classList.add('active');
+                return;
+            }
+
+            // 서비스 타입별 정의
+            const serviceTypes = {
+                'YREND': { name: '근로소득', color: '#007bff', icon: '💼' },
+                'RELYREND': { name: '종교인', color: '#6f42c1', icon: '⛪' },
+                'BIZYREND': { name: '사업소득', color: '#28a745', icon: '🏢' }
+            };
+
+            // 서비스별 고객사 집계
+            const serviceStats = {
+                'YREND': { companies: [], count: 0 },
+                'RELYREND': { companies: [], count: 0 },
+                'BIZYREND': { companies: [], count: 0 }
+            };
+
+            // 복합 사용 집계
+            const combinedUsage = {};
+
+            rawData.forEach(group => {
+                const usedServices = [];
+
+                // 각 서비스 사용 여부 체크
+                Object.keys(serviceTypes).forEach(serviceCode => {
+                    const hasService = group.수집정보_parsed.some(i => i.txformCd === serviceCode);
+
+                    if (hasService) {
+                        usedServices.push(serviceCode);
+                        serviceStats[serviceCode].count++;
+                        serviceStats[serviceCode].companies.push({
+                            id: group.그룹순번,
+                            name: group.서버명,
+                            date: group.수집일
+                        });
+                    }
+                });
+
+                // 복합 사용 패턴 기록
+                if (usedServices.length > 0) {
+                    const pattern = usedServices.sort().join('+');
+                    if (!combinedUsage[pattern]) {
+                        combinedUsage[pattern] = {
+                            services: usedServices,
+                            count: 0,
+                            companies: []
+                        };
+                    }
+                    combinedUsage[pattern].count++;
+                    combinedUsage[pattern].companies.push({
+                        id: group.그룹순번,
+                        name: group.서버명,
+                        date: group.수집일
+                    });
+                }
+            });
+
+            // 모달 내용 생성
+            let html = '';
+
+            // 상단 요약
+            const totalGroups = rawData.length;
+            const usingServiceGroups = Object.keys(combinedUsage).reduce((sum, key) => sum + combinedUsage[key].count, 0);
+
+            html += `
+                <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
+                    <div style="display: flex; justify-content: space-around; text-align: center;">
+                        <div>
+                            <div style="font-size: 0.9rem; opacity: 0.9; margin-bottom: 5px;">전체 그룹</div>
+                            <div style="font-size: 2rem; font-weight: bold;">${totalGroups}</div>
+                        </div>
+                        <div style="width: 1px; background: rgba(255,255,255,0.3);"></div>
+                        <div>
+                            <div style="font-size: 0.9rem; opacity: 0.9; margin-bottom: 5px;">서비스 사용</div>
+                            <div style="font-size: 2rem; font-weight: bold;">${usingServiceGroups}</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // 서비스별 카드
+            html += '<h4 style="margin: 20px 0 10px 0; color: #333;">서비스별 사용 현황</h4>';
+            html += '<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-bottom: 30px;">';
+
+            Object.keys(serviceTypes).forEach(serviceCode => {
+                const service = serviceTypes[serviceCode];
+                const stat = serviceStats[serviceCode];
+                const usageRate = totalGroups > 0 ? Math.round((stat.count / totalGroups) * 100) : 0;
+
+                html += `
+                    <div style="background: white; border-radius: 10px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); border-top: 4px solid ${service.color}; cursor: pointer; transition: 0.2s;"
+                         onmouseover="this.style.boxShadow='0 4px 12px rgba(0,0,0,0.15)'"
+                         onmouseout="this.style.boxShadow='0 2px 8px rgba(0,0,0,0.1)'"
+                         onclick="showServiceDetail('${serviceCode}', '${service.name}')">
+                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px;">
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <span style="font-size: 2rem;">${service.icon}</span>
+                                <h4 style="margin: 0; color: ${service.color};">${service.name}</h4>
+                            </div>
+                        </div>
+                        <div style="text-align: center; margin: 15px 0;">
+                            <div style="font-size: 2.5rem; font-weight: bold; color: ${service.color};">${stat.count}</div>
+                            <div style="font-size: 0.85rem; color: #666;">개 그룹</div>
+                        </div>
+                        <div style="margin-top: 15px;">
+                            <div style="font-size: 0.75rem; color: #999; margin-bottom: 5px;">전체 대비 ${usageRate}%</div>
+                            <div style="background: #e9ecef; border-radius: 10px; height: 8px; overflow: hidden;">
+                                <div style="background: ${service.color}; height: 100%; width: ${usageRate}%; transition: 0.3s;"></div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            html += '</div>';
+
+            // 복합 사용 현황
+            html += '<h4 style="margin: 20px 0 10px 0; color: #333;">복합 서비스 사용 패턴</h4>';
+            html += '<div style="display: grid; gap: 10px;">';
+
+            const sortedPatterns = Object.keys(combinedUsage).sort((a, b) => combinedUsage[b].count - combinedUsage[a].count);
+
+            sortedPatterns.forEach(pattern => {
+                const usage = combinedUsage[pattern];
+                const serviceNames = usage.services.map(s => serviceTypes[s].name).join(' + ');
+                const icons = usage.services.map(s => serviceTypes[s].icon).join(' ');
+
+                html += `
+                    <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <div style="font-size: 1.2rem; margin-bottom: 5px;">${icons}</div>
+                            <div style="font-weight: bold; color: #333;">${serviceNames}</div>
+                        </div>
+                        <div style="text-align: right;">
+                            <div style="font-size: 1.5rem; font-weight: bold; color: #667eea;">${usage.count}</div>
+                            <div style="font-size: 0.75rem; color: #999;">개 그룹</div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            html += '</div>';
+
+            modalBody.innerHTML = html;
+
+            // 상세 데이터를 전역 변수에 저장
+            window.serviceStatsDetail = serviceStats;
+
+            modal.classList.add('active');
+        }
+
+        // 서비스별 상세보기
+        function showServiceDetail(serviceCode, serviceName) {
+            const stat = window.serviceStatsDetail[serviceCode];
+            const modalBody = document.getElementById('serviceUsageModalBody');
+
+            if (!stat || stat.companies.length === 0) {
+                return;
+            }
+
+            const serviceTypes = {
+                'YREND': { color: '#007bff', icon: '💼' },
+                'RELYREND': { color: '#6f42c1', icon: '⛪' },
+                'BIZYREND': { color: '#28a745', icon: '🏢' }
+            };
+
+            const service = serviceTypes[serviceCode];
+
+            let html = `
+                <div style="margin-bottom: 15px;">
+                    <button onclick="showServiceUsageModal()" 
+                            style="padding: 8px 15px; background: #6c757d; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 0.85rem;">
+                        ← 목록으로
+                    </button>
+                </div>
+                <div style="background: linear-gradient(135deg, ${service.color} 0%, ${service.color}dd 100%); color: white; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
+                    <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 10px;">
+                        <span style="font-size: 3rem;">${service.icon}</span>
+                        <div>
+                            <h3 style="margin: 0;">${serviceName} 서비스</h3>
+                            <div style="font-size: 0.9rem; opacity: 0.9; margin-top: 5px;">사용 고객사 목록</div>
+                        </div>
+                    </div>
+                    <div style="text-align: center; margin-top: 15px;">
+                        <div style="font-size: 2.5rem; font-weight: bold;">${stat.count}개 그룹</div>
+                    </div>
+                </div>
+            `;
+
+            // 고객사 목록
+            html += '<div style="display: grid; gap: 10px;">';
+            stat.companies.forEach((company, index) => {
+                html += `
+                    <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; border-left: 4px solid ${service.color};">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <div style="font-weight: bold; font-size: 1.05rem; margin-bottom: 5px;">${company.name}</div>
+                                <div style="font-size: 0.85rem; color: #666;">
+                                    <span>그룹순번: ${company.id}</span> | 
+                                    <span>수집일: ${company.date}</span>
+                                </div>
+                            </div>
+                            <div style="background: ${service.color}; color: white; padding: 5px 12px; border-radius: 20px; font-size: 0.85rem; font-weight: bold;">
+                                ${index + 1}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            html += '</div>';
+
+            modalBody.innerHTML = html;
         }
 
         // 전자신고 현황 모달
