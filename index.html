@@ -1432,12 +1432,18 @@
     <div class="chart-section hidden" id="detailTableSection">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
             <h2 class="section-title" style="margin: 0; border: none; padding: 0;">📋 상세 고객사 그룹 테이블</h2>
-            <select id="sortSelector" onchange="handleSortChange()"
-                style="padding: 8px 12px; border-radius: 6px; border: 1px solid #ddd; font-size: 0.85rem; font-weight: 600; cursor: pointer; background: white; transition: 0.2s;">
-                <option value="">정렬: 기본</option>
-                <option value="desc">정렬: 대상자 많은 순</option>
-                <option value="asc">정렬: 대상자 적은 순</option>
-            </select>
+            <div style="display: flex; gap: 8px; align-items: center;">
+                <span id="searchResultCount" style="font-size:0.82rem; color:#666; white-space:nowrap;"></span>
+                <input id="groupSearchInput" type="text" placeholder="🔍 그룹명 검색..." onkeydown="if(event.key==='Enter') renderTableOnly(rawData)"
+                    style="padding: 8px 12px; border-radius: 6px; border: 1px solid #ddd; font-size: 0.85rem; width: 180px; outline: none; transition: border 0.2s;"
+                    onfocus="this.style.borderColor='#3498db'" onblur="this.style.borderColor='#ddd'">
+                <select id="sortSelector" onchange="handleSortChange()"
+                    style="padding: 8px 12px; border-radius: 6px; border: 1px solid #ddd; font-size: 0.85rem; font-weight: 600; cursor: pointer; background: white; transition: 0.2s;">
+                    <option value="">정렬: 기본</option>
+                    <option value="desc">정렬: 대상자 많은 순</option>
+                    <option value="asc">정렬: 대상자 적은 순</option>
+                </select>
+            </div>
         </div>
         <div class="table-container">
             <table id="mainTable">
@@ -2223,9 +2229,22 @@
             const body = document.getElementById('tableBody');
             body.innerHTML = '';
 
+            const searchKeyword = (document.getElementById('groupSearchInput')?.value || '').toLowerCase();
+
+            // 검색 결과 카운트
+            const countEl = document.getElementById('searchResultCount');
+            if (searchKeyword) {
+                const matched = data.filter(g => String(g.그룹순번 || '').toLowerCase().includes(searchKeyword)).length;
+                if (countEl) countEl.textContent = `검색결과 ${matched}건`;
+            } else {
+                if (countEl) countEl.textContent = '';
+            }
+
             // 상세 테이블 표시가 활성화된 경우에만 행 생성
             if (showDetailTable) {
                 data.forEach(group => {
+                    // 그룹명 검색 필터
+                    if (searchKeyword && !String(group.그룹순번 || '').toLowerCase().includes(searchKeyword)) return;
                     // YREND 데이터만 필터링
                     const yrendData = group.수집정보_parsed.filter(i => i.txformCd === 'YREND');
 
