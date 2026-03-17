@@ -939,7 +939,7 @@
             font-size: 0.82rem;
             font-weight: 700;
             cursor: pointer;
-            box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
             z-index: 9000;
             display: flex;
             align-items: center;
@@ -947,9 +947,10 @@
             transition: all 0.2s;
             letter-spacing: 0.3px;
         }
+
         .floating-report-btn:hover {
             transform: translateY(-3px);
-            box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
         }
 
         /* 임원 보고 모달 */
@@ -966,22 +967,26 @@
             font-size: 0.9rem;
             line-height: 1.7;
         }
+
         .report-doc .report-header {
             text-align: center;
             padding: 28px 0 20px;
             border-bottom: 3px solid #2c3e50;
             margin-bottom: 24px;
         }
+
         .report-doc .report-header .report-title {
             font-size: 1.5rem;
             font-weight: 800;
             color: #2c3e50;
             margin-bottom: 6px;
         }
+
         .report-doc .report-header .report-meta {
             font-size: 0.8rem;
             color: #777;
         }
+
         .report-doc .report-badge {
             display: inline-block;
             background: #2c3e50;
@@ -992,9 +997,11 @@
             font-weight: 700;
             margin-bottom: 10px;
         }
+
         .report-section {
             margin-bottom: 24px;
         }
+
         .report-section-title {
             font-size: 1rem;
             font-weight: 800;
@@ -1003,12 +1010,14 @@
             padding-left: 10px;
             margin-bottom: 14px;
         }
+
         .report-kpi-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
             gap: 12px;
             margin-bottom: 6px;
         }
+
         .report-kpi-card {
             background: #f8f9fa;
             border-radius: 10px;
@@ -1016,6 +1025,7 @@
             text-align: center;
             border-top: 3px solid transparent;
         }
+
         .report-kpi-card .kpi-label {
             font-size: 0.72rem;
             color: #888;
@@ -1024,22 +1034,26 @@
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
+
         .report-kpi-card .kpi-value {
             font-size: 1.5rem;
             font-weight: 800;
             line-height: 1;
         }
+
         .report-kpi-card .kpi-sub {
             font-size: 0.72rem;
             color: #aaa;
             margin-top: 4px;
         }
+
         .report-table {
             width: 100%;
             border-collapse: collapse;
             font-size: 0.85rem;
             margin-bottom: 8px;
         }
+
         .report-table th {
             background: #2c3e50;
             color: white;
@@ -1047,21 +1061,26 @@
             text-align: left;
             font-weight: 600;
         }
+
         .report-table td {
             padding: 9px 12px;
             border-bottom: 1px solid #e9ecef;
         }
+
         .report-table tr:last-child td {
             border-bottom: none;
         }
+
         .report-table tr:nth-child(even) td {
             background: #f8f9fa;
         }
+
         .report-progress-bar-wrap {
             display: flex;
             align-items: center;
             gap: 8px;
         }
+
         .report-progress-bar {
             flex: 1;
             height: 10px;
@@ -1071,6 +1090,7 @@
             -webkit-print-color-adjust: exact;
             print-color-adjust: exact;
         }
+
         .report-progress-bar-fill {
             height: 100%;
             border-radius: 5px;
@@ -1078,6 +1098,7 @@
             -webkit-print-color-adjust: exact;
             print-color-adjust: exact;
         }
+
         .report-highlight-box {
             background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
             color: white;
@@ -1085,26 +1106,31 @@
             padding: 16px 20px;
             margin-bottom: 16px;
         }
+
         .report-highlight-box .hl-title {
             font-size: 0.78rem;
             opacity: 0.85;
             margin-bottom: 4px;
         }
+
         .report-highlight-box .hl-value {
             font-size: 2rem;
             font-weight: 800;
             line-height: 1;
         }
+
         .report-highlight-box .hl-sub {
             font-size: 0.78rem;
             opacity: 0.75;
             margin-top: 4px;
         }
+
         .report-two-col {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 14px;
         }
+
         .report-stat-row {
             display: flex;
             justify-content: space-between;
@@ -1112,17 +1138,21 @@
             padding: 8px 0;
             border-bottom: 1px solid #eee;
         }
+
         .report-stat-row:last-child {
             border-bottom: none;
         }
+
         .report-stat-label {
             font-size: 0.83rem;
             color: #555;
         }
+
         .report-stat-value {
             font-size: 0.9rem;
             font-weight: 700;
         }
+
         .report-footer-note {
             font-size: 0.75rem;
             color: #aaa;
@@ -1131,6 +1161,7 @@
             border-top: 1px solid #eee;
             margin-top: 20px;
         }
+
         .report-print-btn {
             background: #2c3e50;
             color: white;
@@ -1142,13 +1173,16 @@
             cursor: pointer;
             transition: 0.2s;
         }
+
         .report-print-btn:hover {
             background: #1a252f;
         }
+
         /* 인쇄 시 리포트만 보이도록: JS에서 body에 printing-report 클래스 부여 */
-        body.printing-report > *:not(#executiveReportModal) {
+        body.printing-report>*:not(#executiveReportModal) {
             display: none !important;
         }
+
         body.printing-report #executiveReportModal {
             /* fixed 제거 → 매 페이지 반복 방지 */
             position: static !important;
@@ -1158,6 +1192,7 @@
             width: 100% !important;
             height: auto !important;
         }
+
         body.printing-report #executiveReportModal .modal-content {
             box-shadow: none !important;
             border-radius: 0 !important;
@@ -1168,9 +1203,11 @@
             overflow: visible !important;
             height: auto !important;
         }
+
         body.printing-report #executiveReportModal .modal-header {
             border-radius: 0 !important;
         }
+
         body.printing-report #executiveReportModal .modal-body {
             overflow: visible !important;
             max-height: none !important;
@@ -1178,7 +1215,9 @@
         }
 
         @media print {
-            @page { margin: 10mm; }
+            @page {
+                margin: 10mm;
+            }
 
             /* 배경색·그라디언트 인쇄 허용 */
             .report-highlight-box,
@@ -1198,20 +1237,34 @@
             }
 
             /* 모달 헤더(타이틀 바) 숨김 - 리포트 본문만 출력 */
-            body.printing-report #executiveReportModal .modal-header { display: none !important; }
+            body.printing-report #executiveReportModal .modal-header {
+                display: none !important;
+            }
 
             /* 버튼류 숨김 */
             .modal-close,
             .report-print-btn,
-            .floating-report-btn { display: none !important; }
+            .floating-report-btn {
+                display: none !important;
+            }
 
             /* 그리드 인쇄 시 깨짐 방지 */
-            .report-kpi-grid { grid-template-columns: repeat(4, 1fr) !important; }
-            .report-two-col { grid-template-columns: repeat(2, 1fr) !important; }
+            .report-kpi-grid {
+                grid-template-columns: repeat(4, 1fr) !important;
+            }
+
+            .report-two-col {
+                grid-template-columns: repeat(2, 1fr) !important;
+            }
 
             /* 섹션 중간 페이지 나눔 방지 */
-            .report-section { page-break-inside: avoid; }
-            .report-table { page-break-inside: avoid; }
+            .report-section {
+                page-break-inside: avoid;
+            }
+
+            .report-table {
+                page-break-inside: avoid;
+            }
         }
     </style>
 </head>
@@ -1423,11 +1476,13 @@
     <!-- 리포트 보기 모달 -->
     <div class="modal-overlay" id="executiveReportModal" onclick="closeModal(event, 'executiveReportModal')">
         <div class="modal-content" onclick="event.stopPropagation()">
-            <div class="modal-header" style="background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%); color: white; border-radius: 12px 12px 0 0;">
+            <div class="modal-header"
+                style="background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%); color: white; border-radius: 12px 12px 0 0;">
                 <h3 style="color: white;">📋 연말정산 진행현황 리포트</h3>
                 <div style="display: flex; align-items: center; gap: 10px;">
                     <button class="report-print-btn" onclick="printExecutiveReport()">🖨️ 인쇄</button>
-                    <button class="modal-close" onclick="closeModal(null, 'executiveReportModal')" style="color: white; background: rgba(255,255,255,0.2);">&times;</button>
+                    <button class="modal-close" onclick="closeModal(null, 'executiveReportModal')"
+                        style="color: white; background: rgba(255,255,255,0.2);">&times;</button>
                 </div>
             </div>
             <div class="modal-body" id="executiveReportBody" style="padding: 24px;">
@@ -1550,9 +1605,18 @@
         });
 
         // 공통 데이터 처리 함수
+        // 그룹순번에 포함되면 제외할 문구 목록 (대소문자 구분 없음)
+        const EXCLUDE_GROUP_KEYWORDS = ['test', 'demo', 'ts0', 'ts1', 'ts2', 'vip', 'ps'];
+
+        function isExcludedGroup(group) {
+            const id = String(group.그룹순번 || '').toLowerCase();
+            return EXCLUDE_GROUP_KEYWORDS.some(kw => id.includes(kw.toLowerCase()));
+        }
+
         function processData(data, fileName) {
             try {
-                rawData = Array.isArray(data) ? data : Object.values(data).flat();
+                rawData = (Array.isArray(data) ? data : Object.values(data).flat())
+                    .filter(group => !isExcludedGroup(group));
 
                 // YREND 데이터만 추출하여 totalSum 계산
                 rawData.forEach(group => {
@@ -2939,15 +3003,15 @@
             // 현재 대시보드 stats 재계산
             const s = computeCurrentStats();
             const now = new Date();
-            const dateStr = `${now.getFullYear()}년 ${String(now.getMonth()+1).padStart(2,'0')}월 ${String(now.getDate()).padStart(2,'0')}일`;
+            const dateStr = `${now.getFullYear()}년 ${String(now.getMonth() + 1).padStart(2, '0')}월 ${String(now.getDate()).padStart(2, '0')}일`;
             const adminRate = s.totalEmp > 0 ? Math.round((s.adminConfirmCnt / s.totalEmp) * 100) : 0;
-            const userRate  = s.totalEmp > 0 ? Math.round((s.userConfirmCnt  / s.totalEmp) * 100) : 0;
-            const waitRate  = s.totalEmp > 0 ? Math.round((s.waitCnt         / s.totalEmp) * 100) : 0;
-            const cancelRate= s.totalEmp > 0 ? Math.round((s.cancelConfirmCnt/ s.totalEmp) * 100) : 0;
+            const userRate = s.totalEmp > 0 ? Math.round((s.userConfirmCnt / s.totalEmp) * 100) : 0;
+            const waitRate = s.totalEmp > 0 ? Math.round((s.waitCnt / s.totalEmp) * 100) : 0;
+            const cancelRate = s.totalEmp > 0 ? Math.round((s.cancelConfirmCnt / s.totalEmp) * 100) : 0;
             const totalScrap = s.scrapMobileCnt + s.scrapWebCnt;
-            const totalPdf   = s.pdfAdminCnt + s.pdfUserCnt;
-            const easyPdfRate= s.totalEmp > 0 ? Math.round((s.easyPdfCnt / s.totalEmp) * 100) : 0;
-            const sendRate   = s.sendMailCnt > 0 ? Math.round((s.sendUserCnt / s.sendMailCnt) * 100) : 0;
+            const totalPdf = s.pdfAdminCnt + s.pdfUserCnt;
+            const easyPdfRate = s.totalEmp > 0 ? Math.round((s.easyPdfCnt / s.totalEmp) * 100) : 0;
+            const sendRate = s.sendMailCnt > 0 ? Math.round((s.sendUserCnt / s.sendMailCnt) * 100) : 0;
             const completionOverall = adminRate;
             const filterLabel = `SaaS(1군~14군) ${filterActive ? '계속근무자 기준' : '전체(계속+중도)'}`;
 
@@ -3100,14 +3164,14 @@
                         <tbody>
                             ${top5.map((g, i) => `
                             <tr>
-                                <td style="text-align:center; font-weight:700; color:${i===0?'#FFD700':i===1?'#C0C0C0':i===2?'#CD7F32':'#555'};">${i===0?'🥇':i===1?'🥈':i===2?'🥉':'#'+(i+1)}</td>
+                                <td style="text-align:center; font-weight:700; color:${i === 0 ? '#FFD700' : i === 1 ? '#C0C0C0' : i === 2 ? '#CD7F32' : '#555'};">${i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : '#' + (i + 1)}</td>
                                 <td>${g.name} <span style="color:#aaa; font-size:0.75rem;">(ID:${g.id})</span></td>
                                 <td>${g.totalCnt.toLocaleString()}명</td>
-                                <td style="font-weight:700; color:${g.rate>=80?'#28a745':g.rate>=50?'#fd7e14':'#dc3545'};">${g.rate}%</td>
+                                <td style="font-weight:700; color:${g.rate >= 80 ? '#28a745' : g.rate >= 50 ? '#fd7e14' : '#dc3545'};">${g.rate}%</td>
                                 <td>
                                     <div class="report-progress-bar-wrap">
                                         <div class="report-progress-bar">
-                                            <div class="report-progress-bar-fill" style="width:${g.rate}%; background:${g.rate>=80?'#28a745':g.rate>=50?'#fd7e14':'#dc3545'};"></div>
+                                            <div class="report-progress-bar-fill" style="width:${g.rate}%; background:${g.rate >= 80 ? '#28a745' : g.rate >= 50 ? '#fd7e14' : '#dc3545'};"></div>
                                         </div>
                                     </div>
                                 </td>
@@ -3125,14 +3189,14 @@
                         <tbody>
                             ${top5emp.map((g, i) => `
                             <tr>
-                                <td style="text-align:center; font-weight:700; color:${i===0?'#FFD700':i===1?'#C0C0C0':i===2?'#CD7F32':'#555'};">${i===0?'🥇':i===1?'🥈':i===2?'🥉':'#'+(i+1)}</td>
+                                <td style="text-align:center; font-weight:700; color:${i === 0 ? '#FFD700' : i === 1 ? '#C0C0C0' : i === 2 ? '#CD7F32' : '#555'};">${i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : '#' + (i + 1)}</td>
                                 <td>${g.name} <span style="color:#aaa; font-size:0.75rem;">(ID:${g.id})</span></td>
                                 <td>${g.totalCnt.toLocaleString()}명</td>
-                                <td style="font-weight:700; color:${g.rate>=80?'#28a745':g.rate>=50?'#fd7e14':'#dc3545'};">${g.rate}%</td>
+                                <td style="font-weight:700; color:${g.rate >= 80 ? '#28a745' : g.rate >= 50 ? '#fd7e14' : '#dc3545'};">${g.rate}%</td>
                                 <td>
                                     <div class="report-progress-bar-wrap">
                                         <div class="report-progress-bar">
-                                            <div class="report-progress-bar-fill" style="width:${g.rate}%; background:${g.rate>=80?'#28a745':g.rate>=50?'#fd7e14':'#dc3545'};"></div>
+                                            <div class="report-progress-bar-fill" style="width:${g.rate}%; background:${g.rate >= 80 ? '#28a745' : g.rate >= 50 ? '#fd7e14' : '#dc3545'};"></div>
                                         </div>
                                     </div>
                                 </td>
@@ -3169,12 +3233,12 @@
         function computeCurrentStats() {
             // renderDashboard 와 동일한 로직으로 stats 재계산
             let s = {
-                groups:0, totalEmp:0, waitCnt:0, userConfirmCnt:0, adminConfirmCnt:0,
-                cancelConfirmCnt:0, type1Cnt:0, type2Cnt:0,
-                scrapMobileCnt:0, scrapWebCnt:0, pdfAdminCnt:0, pdfUserCnt:0,
-                easyPdfCnt:0, easyPdfCompanyCnt:0,
-                sendMailCnt:0, sendSmsCnt:0, sendWaitUserCnt:0, sendUserCnt:0,
-                sendExmailUserCnt:0, sendMailCompanyCnt:0
+                groups: 0, totalEmp: 0, waitCnt: 0, userConfirmCnt: 0, adminConfirmCnt: 0,
+                cancelConfirmCnt: 0, type1Cnt: 0, type2Cnt: 0,
+                scrapMobileCnt: 0, scrapWebCnt: 0, pdfAdminCnt: 0, pdfUserCnt: 0,
+                easyPdfCnt: 0, easyPdfCompanyCnt: 0,
+                sendMailCnt: 0, sendSmsCnt: 0, sendWaitUserCnt: 0, sendUserCnt: 0,
+                sendExmailUserCnt: 0, sendMailCompanyCnt: 0
             };
             rawData.forEach(group => {
                 const yrendData = group.수집정보_parsed.filter(i => i.txformCd === 'YREND');
