@@ -1377,12 +1377,14 @@
                     <div class="chart-container">
                         <canvas id="scrapChart"></canvas>
                     </div>
+                    <div id="scrapUsageInfo"></div>
                 </div>
                 <div class="chart-card">
                     <h4>PDF 제출 방식 분포</h4>
                     <div class="chart-container">
                         <canvas id="pdfChart"></canvas>
                     </div>
+                    <div id="pdfUsageInfo"></div>
                 </div>
                 <div class="chart-card">
                     <h4>편리한 연말정산 사용 현황</h4>
@@ -1921,8 +1923,20 @@
                     legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 }, padding: 10 } }
                 }
             });
+            // 스크래핑 사용율 (전체 사용자 제출수 pdfUserCnt 대비)
+            {
+                const totalScrap = s.scrapMobileCnt + s.scrapWebCnt;
+                const mobileRate = s.pdfUserCnt > 0 ? (s.scrapMobileCnt / s.pdfUserCnt * 100).toFixed(1) : 0;
+                const webRate = s.pdfUserCnt > 0 ? (s.scrapWebCnt / s.pdfUserCnt * 100).toFixed(1) : 0;
+                const totalRate = s.pdfUserCnt > 0 ? (totalScrap / s.pdfUserCnt * 100).toFixed(1) : 0;
+                const el = document.getElementById('scrapUsageInfo');
+                if (el) {
+                    el.innerHTML = `<div style="font-size:0.75rem; color:#666; margin-bottom:8px; text-align:center; line-height:1.6;">전체 사용자 제출: <span style="font-weight:bold; color:#007bff;">${s.pdfUserCnt.toLocaleString()}건</span> | 모바일: <span style="font-weight:bold; color:#6f42c1;">${mobileRate}%</span> | 웹: <span style="font-weight:bold; color:#17a2b8;">${webRate}%</span> | 합계: <span style="font-weight:bold; color:#28a745;">${totalRate}%</span></div>`;
+                }
+            }
 
             // 5. PDF 제출 방식 (참고: 한 사람이 여러 PDF 제출 가능하므로 합계가 대상 인원 초과 가능)
+            // pdfUsageInfo 업데이트
             updateChart('pdfChart', 'pie', {
                 labels: ['관리자 제출', '사용자 제출'],
                 datasets: [{
@@ -1943,6 +1957,17 @@
                     }
                 }
             });
+
+            // PDF 사용율 (총 대상 인원 totalEmp 대비)
+            {
+                const adminRate = s.totalEmp > 0 ? (s.pdfAdminCnt / s.totalEmp * 100).toFixed(1) : 0;
+                const userRate = s.totalEmp > 0 ? (s.pdfUserCnt / s.totalEmp * 100).toFixed(1) : 0;
+                const totalPdfRate = s.totalEmp > 0 ? ((s.pdfAdminCnt + s.pdfUserCnt) / s.totalEmp * 100).toFixed(1) : 0;
+                const el = document.getElementById('pdfUsageInfo');
+                if (el) {
+                    el.innerHTML = `<div style="font-size:0.75rem; color:#666; margin-bottom:8px; text-align:center; line-height:1.6;">총 대상 인원: <span style="font-weight:bold; color:#007bff;">${s.totalEmp.toLocaleString()}명</span> | 관리자: <span style="font-weight:bold; color:#6f42c1;">${adminRate}%</span> | 사용자: <span style="font-weight:bold; color:#20c997;">${userRate}%</span> | 합계: <span style="font-weight:bold; color:#28a745;">${totalPdfRate}%</span></div>`;
+                }
+            }
 
             // 6. 편리한 연말정산 사용 현황 (회사 수는 텍스트, 사용자 수는 그래프)
             const easyPdfRate = s.totalEmp > 0 ? Math.round((s.easyPdfCnt / s.totalEmp) * 100) : 0;
