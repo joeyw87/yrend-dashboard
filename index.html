@@ -1487,6 +1487,7 @@
                 <h3 style="color: white;">📋 연말정산 진행현황 리포트</h3>
                 <div style="display: flex; align-items: center; gap: 10px;">
                     <button class="report-print-btn" onclick="printExecutiveReport()">🖨️ 인쇄</button>
+                    <button class="report-print-btn" id="copyReportBtn" onclick="copyReportContent()" style="background:rgba(255,255,255,0.2); display: none;">📋 내용복사</button>
                     <button class="modal-close" onclick="closeModal(null, 'executiveReportModal')"
                         style="color: white; background: rgba(255,255,255,0.2);">&times;</button>
                 </div>
@@ -3290,6 +3291,83 @@
                 if (hasSendMail) s.sendMailCompanyCnt++;
             });
             return s;
+        }
+
+        function copyReportContent() {
+            const el = document.getElementById('executiveReportBody');
+            if (!el) return;
+
+            const btn = document.getElementById('copyReportBtn');
+            const onSuccess = () => {
+                const orig = btn.innerHTML;
+                btn.innerHTML = '✅ 복사완료';
+                btn.style.background = 'rgba(40,167,69,0.7)';
+                setTimeout(() => { btn.innerHTML = orig; btn.style.background = 'rgba(255,255,255,0.2)'; }, 2000);
+            };
+
+            // Google Docs 등 외부 에디터에서 인식할 수 있는 핵심 스타일 속성
+            const INLINE_PROPS = [
+                'color', 'background-color',
+                'font-size', 'font-weight', 'font-family', 'font-style',
+                'text-align', 'text-decoration', 'line-height',
+                'padding', 'padding-top', 'padding-right', 'padding-bottom', 'padding-left',
+                'margin', 'margin-top', 'margin-right', 'margin-bottom', 'margin-left',
+                'border', 'border-top', 'border-right', 'border-bottom', 'border-left',
+                'border-radius', 'border-collapse',
+                'width', 'min-width', 'max-width', 'height',
+                'display', 'vertical-align', 'white-space',
+            ];
+
+            // 클론 후 모든 요소에 computed style 인라인 주입
+            function inlineComputedStyles(src, dst) {
+                if (src.nodeType !== 1) return;
+                const cs = window.getComputedStyle(src);
+                const styles = INLINE_PROPS
+                    .map(p => { const v = cs.getPropertyValue(p); return v ? `${p}:${v}` : ''; })
+                    .filter(Boolean).join(';');
+                dst.setAttribute('style', styles);
+                for (let i = 0; i < src.children.length; i++) {
+                    inlineComputedStyles(src.children[i], dst.children[i]);
+                }
+            }
+
+            const clone = el.cloneNode(true);
+            inlineComputedStyles(el, clone);
+
+            // 진행률 바: 퍼센트 텍스트로 대체 (Google Docs는 div width% 미지원)
+            clone.querySelectorAll('[class*="progress-fill"]').forEach(bar => {
+                const w = bar.style.width || bar.getAttribute('style')?.match(/width:\s*([\d.]+%)/)?.[1] || '';
+                if (w) bar.innerHTML = `<span style="font-size:11px;color:white;padding:0 4px;">${w}</span>`;
+            });
+
+            const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"></head>
+<body style="font-family:'Malgun Gothic',sans-serif;font-size:13px;color:#333;padding:20px;background:#fff;">
+${clone.innerHTML}
+</body></html>`;
+
+            if (navigator.clipboard && window.ClipboardItem) {
+                navigator.clipboard.write([new ClipboardItem({
+                    'text/html': new Blob([html], { type: 'text/html' }),
+                    'text/plain': new Blob([el.innerText], { type: 'text/plain' })
+                })]).then(onSuccess).catch(err => {
+                    // fallback: execCommand
+                    const range = document.createRange();
+                    range.selectNode(el);
+                    const sel = window.getSelection();
+                    sel.removeAllRanges(); sel.addRange(range);
+                    document.execCommand('copy');
+                    sel.removeAllRanges();
+                    onSuccess();
+                });
+            } else {
+                const range = document.createRange();
+                range.selectNode(el);
+                const sel = window.getSelection();
+                sel.removeAllRanges(); sel.addRange(range);
+                document.execCommand('copy');
+                sel.removeAllRanges();
+                onSuccess();
+            }
         }
 
         function printExecutiveReport() {
