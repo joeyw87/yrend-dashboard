@@ -907,6 +907,14 @@ function createRequestTypeChart() {
                     }
                 },
                 scales: {
+                    x: {
+                        ticks: {
+                            display: true,
+                            maxRotation: 30,
+                            minRotation: 0,
+                            autoSkip: false
+                        }
+                    },
                     y: {
                         beginAtZero: true,
                         ticks: {
@@ -916,7 +924,7 @@ function createRequestTypeChart() {
                 }
             }
         });
-        
+
         console.log('Request type chart created successfully');
     } catch (error) {
         console.error('Error creating request type chart:', error);
